@@ -1,18 +1,18 @@
-/*
- ============================================================================
- Name        : httpico.cpp
- Author      : Piotr Bryk
- Version     :
- Copyright   : Copyright © 2012 Piotr Bryk, Licensed under the Apache License, Version 2.0.
- Description : Hello World in C++,
- ============================================================================
+/**
+ =========================================================================================
+ File name	: httpico.cpp
+ Copyright	: Copyright © 2012 Piotr Bryk, Licensed under the Apache License, Version 2.0
+ =========================================================================================
  */
 
 #include <iostream>
+#include <cstdlib>
+#include "HttpRequest.hpp"
 
 using namespace std;
 
 int main(void) {
-	cout << "Hello World" << endl; /* prints Hello World2 */
-	return 0;
+	cout << "Hello World" << endl;
+	HttpRequest httpRequest;
+	return EXIT_SUCCESS;
 }
