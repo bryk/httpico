@@ -6,14 +6,19 @@
  */
 
 #include "HttpRequest.hpp"
+#include "HttpRequestState.hpp"
 #include <iostream>
 
-HttpRequest::HttpRequest() {
-	// TODO Auto-generated constructor stub
+namespace Httpico {
+
+HttpRequest::HttpRequest() :
+		state(JUST_CREATED) {
 	std::cout << "HttpRequest" << std::endl;
 }
 
 HttpRequest::~HttpRequest() {
 	// TODO Auto-generated destructor stub
 }
+
+} //namespace
 
