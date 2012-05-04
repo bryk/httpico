@@ -9,17 +9,24 @@
 #define SOCKETREADERHTTPREQUESTPROCESSOR_HPP_
 
 #include "HttpRequestProcessor.hpp"
+#include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 namespace Httpico {
 
 /*
  * Httpico::SocketReaderHttpRequestProcessor
  */
-class SocketReaderHttpRequestProcessor: public Httpico::HttpRequestProcessor {
+class SocketReaderHttpRequestProcessor: public Httpico::HttpRequestProcessor, public boost::enable_shared_from_this<
+		SocketReaderHttpRequestProcessor> {
 public:
-	SocketReaderHttpRequestProcessor(HttpRequestPtr httpRequest);
+	SocketReaderHttpRequestProcessor(HttpRequestPtr httpRequest, HttpServer &srv);
 	virtual ~SocketReaderHttpRequestProcessor();
 	virtual void process();
+	void readHandler(const boost::system::error_code& error, std::size_t bytesTransferred);
+	void writeHandler(const boost::system::error_code& error, std::size_t bytesTransferred);
+private:
+	boost::array<char, 8192> buf;
 };
 
 }

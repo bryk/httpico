@@ -9,6 +9,7 @@
 #define HTTPICO_HTTPREQUEST_HPP_
 #include "HttpRequestState.hpp"
 #include <boost/shared_ptr.hpp>
+#include "HttpServer.hpp"
 
 namespace Httpico {
 
@@ -17,7 +18,7 @@ namespace Httpico {
  */
 class HttpRequest {
 public:
-	HttpRequest();
+	explicit HttpRequest(socketPtr sock);
 	virtual ~HttpRequest();
 	inline HttpRequestState getState() {
 		return state;
@@ -26,12 +27,15 @@ public:
 	inline void setState(HttpRequestState st) {
 		state = st;
 	}
+
+	inline socketPtr getSocket() {
+		return sock;
+	}
+
 private:
 	HttpRequestState state;
+	socketPtr sock;
 };
-
-typedef boost::shared_ptr<HttpRequest> HttpRequestPtr;
-
 } //namespace
 
 #endif 

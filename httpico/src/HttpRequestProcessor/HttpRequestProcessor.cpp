@@ -9,8 +9,8 @@
 
 namespace Httpico {
 
-HttpRequestProcessor::HttpRequestProcessor(HttpRequestPtr httpRequest_) :
-		httpRequest(httpRequest_) {
+HttpRequestProcessor::HttpRequestProcessor(HttpRequestPtr httpRequest_, HttpServer &srv_) :
+		httpRequest(httpRequest_), srv(srv_) {
 }
 
 HttpRequestProcessor::~HttpRequestProcessor() {

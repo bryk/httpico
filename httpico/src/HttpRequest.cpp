@@ -11,8 +11,8 @@
 
 namespace Httpico {
 
-HttpRequest::HttpRequest() :
-		state(JUST_CREATED) {
+HttpRequest::HttpRequest(socketPtr sock_) :
+		state(JUST_CREATED), sock(sock_) {
 	std::cout << "HttpRequest" << std::endl;
 }
 

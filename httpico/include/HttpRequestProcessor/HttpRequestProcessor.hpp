@@ -8,8 +8,7 @@
 #ifndef HTTPREQUESTPROCESSOR_HPP_
 #define HTTPREQUESTPROCESSOR_HPP_
 
-#include "HttpRequest.hpp"
-#include <boost/shared_ptr.hpp>
+#include "PionterDefinitions.hpp"
 
 namespace Httpico {
 
@@ -18,14 +17,12 @@ namespace Httpico {
  */
 class HttpRequestProcessor {
 public:
-	explicit HttpRequestProcessor(HttpRequestPtr httpRequest);
+	explicit HttpRequestProcessor(HttpRequestPtr httpRequest, HttpServer &srv_);
 	virtual ~HttpRequestProcessor();
 	virtual void process() = 0;
-private:
+protected:
 	HttpRequestPtr httpRequest;
+	HttpServer &srv;
 };
-
-typedef boost::shared_ptr<HttpRequestProcessor> HttpRequestProcessorPtr;
-
 }
 #endif 
