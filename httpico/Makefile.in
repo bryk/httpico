@@ -65,11 +65,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_dist_HttpResponseTest_OBJECTS = HttpResponseTest.$(OBJEXT)
 dist_HttpResponseTest_OBJECTS = $(am_dist_HttpResponseTest_OBJECTS)
 dist_HttpResponseTest_DEPENDENCIES = $(GTEST_LIBS)
-am_dist_httpico_OBJECTS = httpico.$(OBJEXT) HttpRequest.$(OBJEXT) \
+am_dist_httpico_OBJECTS = Httpico.$(OBJEXT) HttpRequest.$(OBJEXT) \
 	HttpResponse.$(OBJEXT) HttpServer.$(OBJEXT) \
-	HttpServerConfiguration.$(OBJEXT) \
 	HttpRequestProcessor.$(OBJEXT) \
-	SocketReaderHttpRequestProcessor.$(OBJEXT)
+	HttpServerConfiguration.$(OBJEXT) Utils.$(OBJEXT)
 dist_httpico_OBJECTS = $(am_dist_httpico_OBJECTS)
 dist_httpico_LDADD = $(LDADD)
 dist_httpico_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -232,15 +231,15 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
 AM_CXXFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include -I$(GTEST_DIR)/include
-dist_httpico_SOURCES = src/httpico.cpp \
+dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequest.cpp \
 						src/HttpResponse.cpp \
 						src/HttpServer.cpp \
+						src/HttpRequestProcessor.cpp \
 						src/HttpServerConfiguration.cpp \
-						src/HttpRequestProcessor/HttpRequestProcessor.cpp \
-						src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp
+						src/Utils.cpp
 
-dist_httpico_LDFLAGS = -lboost_system -lpthread
+dist_httpico_LDFLAGS = 
 
 ### TEST section
 GTEST_DIR = contrib/gtest-1.6.0
@@ -367,8 +366,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpResponseTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpServerConfiguration.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SocketReaderHttpRequestProcessor.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpico.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Httpico.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -419,19 +418,19 @@ HttpResponseTest.obj: test/HttpResponseTest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpResponseTest.obj `if test -f 'test/HttpResponseTest.cpp'; then $(CYGPATH_W) 'test/HttpResponseTest.cpp'; else $(CYGPATH_W) '$(srcdir)/test/HttpResponseTest.cpp'; fi`
 
-httpico.o: src/httpico.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT httpico.o -MD -MP -MF $(DEPDIR)/httpico.Tpo -c -o httpico.o `test -f 'src/httpico.cpp' || echo '$(srcdir)/'`src/httpico.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpico.Tpo $(DEPDIR)/httpico.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/httpico.cpp' object='httpico.o' libtool=no @AMDEPBACKSLASH@
+Httpico.o: src/Httpico.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Httpico.o -MD -MP -MF $(DEPDIR)/Httpico.Tpo -c -o Httpico.o `test -f 'src/Httpico.cpp' || echo '$(srcdir)/'`src/Httpico.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Httpico.Tpo $(DEPDIR)/Httpico.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Httpico.cpp' object='Httpico.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o httpico.o `test -f 'src/httpico.cpp' || echo '$(srcdir)/'`src/httpico.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Httpico.o `test -f 'src/Httpico.cpp' || echo '$(srcdir)/'`src/Httpico.cpp
 
-httpico.obj: src/httpico.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT httpico.obj -MD -MP -MF $(DEPDIR)/httpico.Tpo -c -o httpico.obj `if test -f 'src/httpico.cpp'; then $(CYGPATH_W) 'src/httpico.cpp'; else $(CYGPATH_W) '$(srcdir)/src/httpico.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/httpico.Tpo $(DEPDIR)/httpico.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/httpico.cpp' object='httpico.obj' libtool=no @AMDEPBACKSLASH@
+Httpico.obj: src/Httpico.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Httpico.obj -MD -MP -MF $(DEPDIR)/Httpico.Tpo -c -o Httpico.obj `if test -f 'src/Httpico.cpp'; then $(CYGPATH_W) 'src/Httpico.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Httpico.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Httpico.Tpo $(DEPDIR)/Httpico.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Httpico.cpp' object='Httpico.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o httpico.obj `if test -f 'src/httpico.cpp'; then $(CYGPATH_W) 'src/httpico.cpp'; else $(CYGPATH_W) '$(srcdir)/src/httpico.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Httpico.obj `if test -f 'src/Httpico.cpp'; then $(CYGPATH_W) 'src/Httpico.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Httpico.cpp'; fi`
 
 HttpRequest.o: src/HttpRequest.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpRequest.o -MD -MP -MF $(DEPDIR)/HttpRequest.Tpo -c -o HttpRequest.o `test -f 'src/HttpRequest.cpp' || echo '$(srcdir)/'`src/HttpRequest.cpp
@@ -475,6 +474,20 @@ HttpServer.obj: src/HttpServer.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpServer.obj `if test -f 'src/HttpServer.cpp'; then $(CYGPATH_W) 'src/HttpServer.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpServer.cpp'; fi`
 
+HttpRequestProcessor.o: src/HttpRequestProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpRequestProcessor.o -MD -MP -MF $(DEPDIR)/HttpRequestProcessor.Tpo -c -o HttpRequestProcessor.o `test -f 'src/HttpRequestProcessor.cpp' || echo '$(srcdir)/'`src/HttpRequestProcessor.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpRequestProcessor.Tpo $(DEPDIR)/HttpRequestProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpRequestProcessor.cpp' object='HttpRequestProcessor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpRequestProcessor.o `test -f 'src/HttpRequestProcessor.cpp' || echo '$(srcdir)/'`src/HttpRequestProcessor.cpp
+
+HttpRequestProcessor.obj: src/HttpRequestProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpRequestProcessor.obj -MD -MP -MF $(DEPDIR)/HttpRequestProcessor.Tpo -c -o HttpRequestProcessor.obj `if test -f 'src/HttpRequestProcessor.cpp'; then $(CYGPATH_W) 'src/HttpRequestProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpRequestProcessor.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpRequestProcessor.Tpo $(DEPDIR)/HttpRequestProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpRequestProcessor.cpp' object='HttpRequestProcessor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpRequestProcessor.obj `if test -f 'src/HttpRequestProcessor.cpp'; then $(CYGPATH_W) 'src/HttpRequestProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpRequestProcessor.cpp'; fi`
+
 HttpServerConfiguration.o: src/HttpServerConfiguration.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpServerConfiguration.o -MD -MP -MF $(DEPDIR)/HttpServerConfiguration.Tpo -c -o HttpServerConfiguration.o `test -f 'src/HttpServerConfiguration.cpp' || echo '$(srcdir)/'`src/HttpServerConfiguration.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpServerConfiguration.Tpo $(DEPDIR)/HttpServerConfiguration.Po
@@ -489,33 +502,19 @@ HttpServerConfiguration.obj: src/HttpServerConfiguration.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpServerConfiguration.obj `if test -f 'src/HttpServerConfiguration.cpp'; then $(CYGPATH_W) 'src/HttpServerConfiguration.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpServerConfiguration.cpp'; fi`
 
-HttpRequestProcessor.o: src/HttpRequestProcessor/HttpRequestProcessor.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpRequestProcessor.o -MD -MP -MF $(DEPDIR)/HttpRequestProcessor.Tpo -c -o HttpRequestProcessor.o `test -f 'src/HttpRequestProcessor/HttpRequestProcessor.cpp' || echo '$(srcdir)/'`src/HttpRequestProcessor/HttpRequestProcessor.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpRequestProcessor.Tpo $(DEPDIR)/HttpRequestProcessor.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpRequestProcessor/HttpRequestProcessor.cpp' object='HttpRequestProcessor.o' libtool=no @AMDEPBACKSLASH@
+Utils.o: src/Utils.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Utils.o -MD -MP -MF $(DEPDIR)/Utils.Tpo -c -o Utils.o `test -f 'src/Utils.cpp' || echo '$(srcdir)/'`src/Utils.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Utils.Tpo $(DEPDIR)/Utils.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Utils.cpp' object='Utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpRequestProcessor.o `test -f 'src/HttpRequestProcessor/HttpRequestProcessor.cpp' || echo '$(srcdir)/'`src/HttpRequestProcessor/HttpRequestProcessor.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Utils.o `test -f 'src/Utils.cpp' || echo '$(srcdir)/'`src/Utils.cpp
 
-HttpRequestProcessor.obj: src/HttpRequestProcessor/HttpRequestProcessor.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpRequestProcessor.obj -MD -MP -MF $(DEPDIR)/HttpRequestProcessor.Tpo -c -o HttpRequestProcessor.obj `if test -f 'src/HttpRequestProcessor/HttpRequestProcessor.cpp'; then $(CYGPATH_W) 'src/HttpRequestProcessor/HttpRequestProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpRequestProcessor/HttpRequestProcessor.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpRequestProcessor.Tpo $(DEPDIR)/HttpRequestProcessor.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpRequestProcessor/HttpRequestProcessor.cpp' object='HttpRequestProcessor.obj' libtool=no @AMDEPBACKSLASH@
+Utils.obj: src/Utils.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Utils.obj -MD -MP -MF $(DEPDIR)/Utils.Tpo -c -o Utils.obj `if test -f 'src/Utils.cpp'; then $(CYGPATH_W) 'src/Utils.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Utils.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Utils.Tpo $(DEPDIR)/Utils.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Utils.cpp' object='Utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpRequestProcessor.obj `if test -f 'src/HttpRequestProcessor/HttpRequestProcessor.cpp'; then $(CYGPATH_W) 'src/HttpRequestProcessor/HttpRequestProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpRequestProcessor/HttpRequestProcessor.cpp'; fi`
-
-SocketReaderHttpRequestProcessor.o: src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT SocketReaderHttpRequestProcessor.o -MD -MP -MF $(DEPDIR)/SocketReaderHttpRequestProcessor.Tpo -c -o SocketReaderHttpRequestProcessor.o `test -f 'src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp' || echo '$(srcdir)/'`src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SocketReaderHttpRequestProcessor.Tpo $(DEPDIR)/SocketReaderHttpRequestProcessor.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp' object='SocketReaderHttpRequestProcessor.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o SocketReaderHttpRequestProcessor.o `test -f 'src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp' || echo '$(srcdir)/'`src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp
-
-SocketReaderHttpRequestProcessor.obj: src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT SocketReaderHttpRequestProcessor.obj -MD -MP -MF $(DEPDIR)/SocketReaderHttpRequestProcessor.Tpo -c -o SocketReaderHttpRequestProcessor.obj `if test -f 'src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp'; then $(CYGPATH_W) 'src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SocketReaderHttpRequestProcessor.Tpo $(DEPDIR)/SocketReaderHttpRequestProcessor.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp' object='SocketReaderHttpRequestProcessor.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o SocketReaderHttpRequestProcessor.obj `if test -f 'src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp'; then $(CYGPATH_W) 'src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Utils.obj `if test -f 'src/Utils.cpp'; then $(CYGPATH_W) 'src/Utils.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Utils.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

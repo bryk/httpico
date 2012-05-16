@@ -6,18 +6,18 @@
  */
 
 #include "HttpRequest.hpp"
-#include "HttpRequestState.hpp"
-#include <iostream>
+#include "Utils.hpp"
+#include <sys/socket.h>
+#include <unistd.h>
 
 namespace Httpico {
 
-HttpRequest::HttpRequest(socketPtr sock_) :
-		state(JUST_CREATED), sock(sock_) {
-	std::cout << "HttpRequest" << std::endl;
+HttpRequest::HttpRequest(int socketFd) :
+		socketFd_(socketFd) {
 }
 
 HttpRequest::~HttpRequest() {
-	// TODO Auto-generated destructor stub
+	close(socketFd_);
 }
 
 } //namespace

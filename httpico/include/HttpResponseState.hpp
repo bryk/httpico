@@ -1,19 +1,19 @@
 /**
  =========================================================================================
- File name	: /httpico/src/HttpRequestProcessor.cpp
+ File name	: /httpico/include/HttpRequestState.hpp
  Copyright	: Copyright © 2012 Piotr Bryk, Licensed under the Apache License, Version 2.0
  =========================================================================================
  */
 
-#include "HttpRequestProcessor/HttpRequestProcessor.hpp"
+#ifndef HTTPREQUESTSTATE_HPP_
+#define HTTPREQUESTSTATE_HPP_
 
 namespace Httpico {
 
-HttpRequestProcessor::HttpRequestProcessor(HttpRequestPtr httpRequest_, HttpServer &srv_) :
-		httpRequest(httpRequest_), srv(srv_) {
-}
+enum HttpResponseState {
+	OK
+};
 
-HttpRequestProcessor::~HttpRequestProcessor() {
-}
+} //namespace
 
-}
+#endif 

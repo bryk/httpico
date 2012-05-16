@@ -7,85 +7,90 @@
 
 #include "HttpServer.hpp"
 #include <iostream>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include "HttpRequestProcessor/SocketReaderHttpRequestProcessor.hpp"
+#include "Utils.hpp"
 #include "HttpRequest.hpp"
+#include "HttpRequestProcessor.hpp"
 #include "HttpServerConfiguration.hpp"
-
-using boost::asio::ip::tcp;
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <cstring>
+#include <cstdio>
+#include <cerrno>
 
 namespace Httpico {
 
 HttpServer::HttpServer(HttpServerConfiguration &conf) :
-		configuration(conf), io_service(), acceptor(io_service, tcp::endpoint(tcp::v4(), configuration.getServerPort())) {
+		configuration(conf) {
+	//initialize signal handlers
+	Utils::initShouldExit();
 }
 
 HttpServer::~HttpServer() {
-	// TODO Auto-generated destructor stub
-}
-
-void HttpServer::handleAccept(socketPtr sock) {
-	std::cerr << "accepted socket\n";
-	acceptNewSocket();
-	HttpRequestPtr req(new HttpRequest(sock));
-	HttpRequestProcessorPtr ptr(new SocketReaderHttpRequestProcessor(req, *this));
-	ptr->process();
-	//ptr->process();
-	//char buf[10000];
-
-	/*boost::system::error_code error;
-	 sock->read_some(boost::asio::buffer(buf), error);
-	 if (error == boost::asio::error::eof)
-	 return; // Connection closed cleanly by peer.
-	 else if (error)
-	 throw boost::system::system_error(error); // Some other error.
-
-	 std::cerr << buf << std::endl;*/
-
-	//sock->async_read_some(boost::asio::buffer(buf), boost::bind(&HttpServer::handleRead, this, sock));
-	//io_service.reset();
-}
-/*
- void HttpServer::handleRead(boost::shared_ptr<tcp::socket> sock) {
- std::cerr << buf.elems << std::endl;
- std::ostringstream ss;
- ss << num++;
- std::string message = ss.str();
-
- sock->shutdown(tcp::socket::shutdown_receive);
-
- boost::asio::async_write(*sock, boost::asio::buffer(message),
- boost::bind(&HttpServer::handleWrite, this, boost::asio::placeholders::error,
- boost::asio::placeholders::bytes_transferred, sock));
- }
-
- void HttpServer::handleWrite(const boost::system::error_code& , size_t bytes_written,
- boost::shared_ptr<tcp::socket> sock) {
- std::cerr << "handleWrite, zapisano: " << bytes_written << std::endl;
- sock->shutdown(tcp::socket::shutdown_send);
- sock.reset();
- }*/
-
-void HttpServer::acceptNewSocket() {
-	socketPtr sock(new tcp::socket(io_service));
-	acceptor.async_accept(*sock, boost::bind(&HttpServer::handleAccept, this, sock));
+	Utils::log("Niszczę serwer\n");
+	close(socketFd);
 }
 
 void HttpServer::start() {
-	std::cerr << "starting server\n";
-	try {
-		std::cerr << "aaaaa" << std::endl;
-		acceptNewSocket();
-		std::cerr << "sssss" << std::endl;
-		//while (true) {
-		//std::cerr << "Loop" << std::endl;
-
-		io_service.run();
-		//	}
-	} catch (std::exception& e) {
-		std::cerr << "Overall exception" << e.what() << std::endl;
+	Utils::log("Serwer startuje\n");
+	initialize();
+	while (!Utils::shouldExit()) {
+		//acceptNewSocket();
+		int connectionFd;
+		if ((connectionFd = accept(socketFd, NULL, NULL)) < 0) {
+			if (errno != EINTR) {
+				Utils::dbg("Błąd akceptowania\n");
+				perror(NULL);
+			}
+			continue;
+		} else {
+			Utils::log("Zaakceptowano połączenie!!!\n");
+			HttpRequest *httpRequest = new HttpRequest(connectionFd);
+			HttpRequestProcessor processor(httpRequest);
+			processor.process();
+		}
 	}
+	Utils::log("Zamykam serwer\n");
+}
+
+void HttpServer::initialize() {
+	Utils::dbg("Zaczynam inicjalizować\n");
+	socketFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socketFd == -1) {
+		Utils::setShouldExit();
+		Utils::dbg("Krytyczny błąd\n");
+		perror(NULL);
+		return;
+	}
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr)); //zerujemy
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(configuration.getServerPort());
+
+	int reuse = 1;
+	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(int)) < 0) {
+		Utils::setShouldExit();
+		Utils::dbg("setsockopt() failed\n");
+		perror(NULL);
+		return;
+	}
+
+	if (bind(socketFd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+		Utils::setShouldExit();
+		Utils::dbg("Krytyczny błąd bind\n");
+		perror(NULL);
+		return;
+	}
+
+	if (listen(socketFd, 1024) < 0) { //TODO unhardcode
+		Utils::setShouldExit();
+		Utils::dbg("Krytyczny błąd listen\n");
+		perror(NULL);
+		return;
+	}
+
+	Utils::dbg("Skończyłem inicjalizować\n");
 }
 
 } //namespace

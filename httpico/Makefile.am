@@ -3,14 +3,14 @@ AM_CXXFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include -I$(GTEST_DIR)/include
 
 bin_PROGRAMS = dist/httpico
-dist_httpico_SOURCES = src/httpico.cpp \
+dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequest.cpp \
 						src/HttpResponse.cpp \
 						src/HttpServer.cpp \
+						src/HttpRequestProcessor.cpp \
 						src/HttpServerConfiguration.cpp \
-						src/HttpRequestProcessor/HttpRequestProcessor.cpp \
-						src/HttpRequestProcessor/SocketReaderHttpRequestProcessor.cpp
-dist_httpico_LDFLAGS = -lboost_system -lpthread
+						src/Utils.cpp
+dist_httpico_LDFLAGS =
 		
 ### TEST section
 GTEST_DIR = contrib/gtest-1.6.0

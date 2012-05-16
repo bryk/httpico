@@ -8,7 +8,7 @@
 #ifndef HTTPREQUESTPROCESSOR_HPP_
 #define HTTPREQUESTPROCESSOR_HPP_
 
-#include "PionterDefinitions.hpp"
+#include "ForwardDeclarations.hpp"
 
 namespace Httpico {
 
@@ -17,12 +17,12 @@ namespace Httpico {
  */
 class HttpRequestProcessor {
 public:
-	explicit HttpRequestProcessor(HttpRequestPtr httpRequest, HttpServer &srv_);
+	explicit HttpRequestProcessor(HttpRequest *);
 	virtual ~HttpRequestProcessor();
-	virtual void process() = 0;
-protected:
-	HttpRequestPtr httpRequest;
-	HttpServer &srv;
+	void process();
+private:
+	HttpRequest *httpRequest_;
 };
+
 }
 #endif 

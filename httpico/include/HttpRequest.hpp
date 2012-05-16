@@ -7,9 +7,6 @@
 
 #ifndef HTTPICO_HTTPREQUEST_HPP_
 #define HTTPICO_HTTPREQUEST_HPP_
-#include "HttpRequestState.hpp"
-#include <boost/shared_ptr.hpp>
-#include "HttpServer.hpp"
 
 namespace Httpico {
 
@@ -18,23 +15,14 @@ namespace Httpico {
  */
 class HttpRequest {
 public:
-	explicit HttpRequest(socketPtr sock);
+	explicit HttpRequest(int socketFd);
 	virtual ~HttpRequest();
-	inline HttpRequestState getState() {
-		return state;
-	}
-
-	inline void setState(HttpRequestState st) {
-		state = st;
-	}
-
-	inline socketPtr getSocket() {
-		return sock;
+	inline int getSocketFd() {
+		return socketFd_;
 	}
 
 private:
-	HttpRequestState state;
-	socketPtr sock;
+	int socketFd_;
 };
 } //namespace
 
