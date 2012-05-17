@@ -11,6 +11,7 @@
 #include "HttpRequest.hpp"
 #include "HttpRequestProcessor.hpp"
 #include "HttpServerConfiguration.hpp"
+#include "HttpResponse.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -46,7 +47,8 @@ void HttpServer::start() {
 		} else {
 			Utils::log("Zaakceptowano połączenie!!!\n");
 			HttpRequest *httpRequest = new HttpRequest(connectionFd);
-			HttpRequestProcessor processor(httpRequest);
+			HttpResponse *httpResponse = new HttpResponse(connectionFd);
+			HttpRequestProcessor processor(httpRequest, httpResponse);
 			processor.process();
 		}
 	}

@@ -13,5 +13,6 @@ class HttpRequest;
 class HttpRequestProcessor;
 class HttpServer;
 class HttpServerConfiguration;
+class HttpResponse;
 }
 #endif 

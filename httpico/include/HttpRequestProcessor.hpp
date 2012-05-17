@@ -9,6 +9,7 @@
 #define HTTPREQUESTPROCESSOR_HPP_
 
 #include "ForwardDeclarations.hpp"
+#include <string>
 
 namespace Httpico {
 
@@ -17,11 +18,15 @@ namespace Httpico {
  */
 class HttpRequestProcessor {
 public:
-	explicit HttpRequestProcessor(HttpRequest *);
+	explicit HttpRequestProcessor(HttpRequest *, HttpResponse *);
 	virtual ~HttpRequestProcessor();
 	void process();
 private:
 	HttpRequest *httpRequest_;
+	HttpResponse *httpResponse_;
+
+	void parseRequest(const std::string &buf);
+	void parseResourceName(const std::string &res);
 };
 
 }

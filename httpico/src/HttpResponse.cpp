@@ -6,16 +6,25 @@
  */
 
 #include "HttpResponse.hpp"
+#include "unistd.h"
+#include <sys/socket.h>
+#include "Utils.hpp"
 
 namespace Httpico {
 
-HttpResponse::HttpResponse() {
-	// TODO Auto-generated constructor stub
+HttpResponse::HttpResponse(int sockketFd) :
+		socketFd_(sockketFd) {
 
 }
 
 HttpResponse::~HttpResponse() {
-	// TODO Auto-generated destructor stub
+	shutdown(socketFd_, 1);
+}
+
+void HttpResponse::writeResponse(Buffer &buf) {
+	if (write(socketFd_, buf.c_str(), sizeof(char) * buf.size()) == -1) {
+		Utils::dbg("Nie udało się odpowiedzieć klientowi\n");
+	}
 }
 
 }

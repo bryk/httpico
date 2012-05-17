@@ -8,15 +8,21 @@
 #ifndef HTTPRESPONSE_HPP_
 #define HTTPRESPONSE_HPP_
 
+#include <string>
+
 namespace Httpico {
 
+typedef std::string Buffer;
 /*
  * Httpico::HttpResponse
  */
 class HttpResponse {
 public:
-	HttpResponse();
+	explicit HttpResponse(int socketFd);
 	virtual ~HttpResponse();
+	void writeResponse(Buffer &buf);
+private:
+	int socketFd_;
 };
 
 }
