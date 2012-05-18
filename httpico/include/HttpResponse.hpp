@@ -8,6 +8,7 @@
 #ifndef HTTPRESPONSE_HPP_
 #define HTTPRESPONSE_HPP_
 
+#include "HttpResponseState.hpp"
 #include <string>
 
 namespace Httpico {
@@ -21,6 +22,7 @@ public:
 	explicit HttpResponse(int socketFd);
 	virtual ~HttpResponse();
 	void writeResponse(Buffer &buf);
+	HttpResponseState state;
 private:
 	int socketFd_;
 };

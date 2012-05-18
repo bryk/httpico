@@ -8,6 +8,8 @@
 #ifndef HTTPSERVERCONFIGURATION_HPP_
 #define HTTPSERVERCONFIGURATION_HPP_
 
+#include <string>
+
 namespace Httpico {
 
 /*
@@ -21,10 +23,12 @@ public:
 	void setServerPort(int p);
 	int getRequestBufferSize();
 	void setRequestBufferSize(int p);
+	const std::string &getServerRoot();
+	void setServerRoot(const std::string &);
 private:
 	int serverPort;
 	int requestBufferSize;
-
+	std::string serverRoot;
 	static const int DEFAULT_SERVER_PORT = 8888;
 	static const int REQUEST_BUFFER_SIZE = 1024 * 8;
 };

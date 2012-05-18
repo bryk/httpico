@@ -5,6 +5,8 @@ bin_PROGRAMS = dist/httpico
 dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequest.cpp \
 						src/HttpResponse.cpp \
+						src/HttpResponseState.cpp \
+						src/HttpResponseProcessor.cpp \
 						src/HttpServer.cpp \
 						src/HttpRequestProcessor.cpp \
 						src/HttpServerConfiguration.cpp \

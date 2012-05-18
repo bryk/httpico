@@ -8,11 +8,14 @@
 #include "HttpRequestProcessor.hpp"
 #include "Utils.hpp"
 #include "HttpRequest.hpp"
+#include "HttpServerConfiguration.hpp"
 #include "HttpResponse.hpp"
+#include "HttpResponseProcessor.hpp"
 #include <cerrno>
 #include <cstdio>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include <vector>
 
 namespace Httpico {
@@ -61,8 +64,9 @@ std::vector<std::string> tokenize(const std::string &line, const std::string del
 
 }
 
-HttpRequestProcessor::HttpRequestProcessor(HttpRequest * httpRequest, HttpResponse *httpResponse) :
-		httpRequest_(httpRequest), httpResponse_(httpResponse) {
+HttpRequestProcessor::HttpRequestProcessor(HttpRequest * httpRequest, HttpResponse *httpResponse,
+		HttpServerConfiguration &configuration) :
+		httpRequest_(httpRequest), httpResponse_(httpResponse), configuration_(configuration) {
 }
 
 HttpRequestProcessor::~HttpRequestProcessor() {
@@ -74,36 +78,31 @@ HttpRequestProcessor::~HttpRequestProcessor() {
 void HttpRequestProcessor::process() {
 	Utils::dbg("Processuje requesta\n");
 	Buffer &buf = httpRequest_->readRequest();
-	parseRequest(buf);
-	std::string resp;
-	resp += "HTTP/1.0 200 OK\r\nServer: httpico\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
-	resp += "Cześć, zapytałeś się mnie metodą";
-	if (httpRequest_->requestType == GET) {
-		resp += " GET";
-	} else if (httpRequest_->requestType == POST) {
-		resp += " POST";
-	}
-	resp += "<br>Chciałeś mieć dostęp do zasobu: '";
-	resp += httpRequest_->reqestedResource;
-	resp += "'<br><br>Wywołałeś stronę z argumentami GET:<br>";
-	for (size_t i = 0; i < httpRequest_->getNumOfGetArgs(); i++) {
-		resp += httpRequest_->getIthGetArg(i).first;
-		resp += " = ";
-		resp += httpRequest_->getIthGetArg(i).second;
-		resp += "<br>";
+	if (!parseRequest(buf)) {
+		httpResponse_->state = INTERNAL_SERVER_ERROR;
+		Utils::dbg("INTERNAL SERVER ERROR\n");
+	} else {
+		std::string p;
+		p += configuration_.getServerRoot();
+		p += httpRequest_->reqestedResource;
+		Utils::dbg("Requested resource:%s\n", httpRequest_->reqestedResource.c_str());
+		char tmp[10000];
+		if (realpath(p.c_str(), tmp) == NULL) { //let's change to real path
+			perror(p.c_str());
+			httpResponse_->state = NOT_FOUND;
+		} else {
+			Utils::dbg("Good path:'%s' (było: %s)\n", tmp, p.c_str());
+			httpResponse_->state = OK;
+		}
 	}
 
-	resp += "<br><br>Wywołałeś stronę z nagłówakmi:<br>";
-	for (size_t i = 0; i < httpRequest_->getNumOfHeaders(); i++) {
-		resp += httpRequest_->getIthHeader(i).first;
-		resp += " = ";
-		resp += httpRequest_->getIthHeader(i).second;
-		resp += "<br>";
-	}
-	httpResponse_->writeResponse(resp);
+	HttpResponseProcessor *processor = new HttpResponseProcessor(*httpResponse_, *httpRequest_, configuration_);
+	processor->process();
+	delete processor;
+	Utils::dbg("Skończyłem processować requesta\n");
 }
 
-void HttpRequestProcessor::parseResourceName(const std::string &res) {
+bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	size_t qmark = res.find('?');
 	if (qmark != std::string::npos) {
 		httpRequest_->reqestedResource = res.substr(0, qmark);
@@ -124,9 +123,10 @@ void HttpRequestProcessor::parseResourceName(const std::string &res) {
 	} else {
 		httpRequest_->reqestedResource = res;
 	}
+	return true;
 }
 
-void HttpRequestProcessor::parseRequest(const std::string &buf) {
+bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 	size_t a = 0, lineNum = 0;
 	while (a < buf.size()) {
 		size_t b = a;
@@ -138,15 +138,15 @@ void HttpRequestProcessor::parseRequest(const std::string &buf) {
 		if (lineNum == 0) {
 			std::vector<std::string> token = tokenize(line);
 			if (token.size() < 2) {
-				//TODO
+				return false; //todo
 			} else {
 				if (token[0] == "GET") {
 					httpRequest_->requestType = GET;
 				} else if (token[0] == "POST") {
 					httpRequest_->requestType = POST;
 				} else {
-					//TODO;
 					Utils::dbg("Zła metoda: %s", token[0].c_str());
+					return false; //todo
 				}
 				parseResourceName(token[1]);
 			}
@@ -167,6 +167,7 @@ void HttpRequestProcessor::parseRequest(const std::string &buf) {
 		a = b + 1;
 		lineNum++;
 	}
+	return true;
 }
 
 }

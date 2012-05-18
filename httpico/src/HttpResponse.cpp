@@ -8,12 +8,13 @@
 #include "HttpResponse.hpp"
 #include "unistd.h"
 #include <sys/socket.h>
+#include "HttpResponseState.hpp"
 #include "Utils.hpp"
 
 namespace Httpico {
 
 HttpResponse::HttpResponse(int sockketFd) :
-		socketFd_(sockketFd) {
+		state(INTERNAL_SERVER_ERROR), socketFd_(sockketFd) {
 
 }
 
@@ -22,6 +23,7 @@ HttpResponse::~HttpResponse() {
 }
 
 void HttpResponse::writeResponse(Buffer &buf) {
+	Utils::dbg("Zapisuje: '%s'\n", buf.c_str());
 	if (write(socketFd_, buf.c_str(), sizeof(char) * buf.size()) == -1) {
 		Utils::dbg("Nie udało się odpowiedzieć klientowi\n");
 	}

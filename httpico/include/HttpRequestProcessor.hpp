@@ -18,15 +18,16 @@ namespace Httpico {
  */
 class HttpRequestProcessor {
 public:
-	explicit HttpRequestProcessor(HttpRequest *, HttpResponse *);
+	explicit HttpRequestProcessor(HttpRequest *, HttpResponse *, HttpServerConfiguration &configuration);
 	virtual ~HttpRequestProcessor();
 	void process();
 private:
 	HttpRequest *httpRequest_;
 	HttpResponse *httpResponse_;
+	HttpServerConfiguration &configuration_;
 
-	void parseRequest(const std::string &buf);
-	void parseResourceName(const std::string &res);
+	bool parseRequest(const std::string &buf);
+	bool parseResourceName(const std::string &res);
 };
 
 }
