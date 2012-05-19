@@ -12,6 +12,7 @@
 #include <iostream>
 #include <ctime>
 #include <sstream>
+#include <string>
 
 namespace Utils {
 
@@ -39,6 +40,42 @@ void logToFile(FILE *f, const char *fmt, va_list args) {
 
 } //namespace
 
+std::string getExtenstion(const std::string & val) {
+	size_t pos = val.rfind('.');
+	if (pos != std::string::npos) {
+		return val.substr(pos + 1);
+	}
+	return "";
+}
+
+int toInt(const std::string & val, size_t base) {
+	int ret = 0, pow = 1;
+	for (int i = val.size() - 1; i >= 0; i--) {
+		ret += pow * (val[i] - '0');
+		pow *= base;
+	}
+	return ret;
+}
+
+std::string urlDecode(const std::string &str) {
+	std::string ret, byte;
+	size_t i = 0;
+	while (i < str.size()) {
+		if (str[i] == '%' && i + 2 < str.size()) {
+			byte = "";
+			byte += str[i + 1];
+			byte += str[i + 2];
+			Utils::dbg("Bajt: %s zmieniłem na '%c' (%d)\n", byte.c_str(), (char) toInt(byte, 16), (char) toInt(byte, 16));
+			ret += (char) toInt(byte, 16);
+			i += 3;
+		} else {
+			ret += str[i];
+			i++;
+		}
+	}
+	return ret;
+}
+
 void dbg(const char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
@@ -57,7 +94,12 @@ void setShouldExit() {
 	shouldExit_ = 1;
 }
 
-void initShouldExit() {
+void sigpipeHandler(int) {
+	Utils::dbg("SIGPIPE\n");
+	//nothing
+}
+
+void initSignalHandlers() {
 	shouldExit_ = 0;
 	struct sigaction sact;
 	sigemptyset(&sact.sa_mask);
@@ -66,6 +108,7 @@ void initShouldExit() {
 	if (sigaction(SIGINT, &sact, NULL) == -1) {
 		perror(NULL);
 	}
+	signal(SIGPIPE, sigpipeHandler);
 }
 
 bool shouldExit() {

@@ -22,9 +22,9 @@ HttpResponse::~HttpResponse() {
 	shutdown(socketFd_, 1);
 }
 
-void HttpResponse::writeResponse(Buffer &buf) {
-	Utils::dbg("Zapisuje: '%s'\n", buf.c_str());
-	if (write(socketFd_, buf.c_str(), sizeof(char) * buf.size()) == -1) {
+void HttpResponse::writeResponse(const Buffer &buf) {
+	//Utils::dbg("Zapisuje: '%s'\n", buf.c_str());
+	if (write(socketFd_, buf.data(), sizeof(char) * buf.size()) == -1) {
 		Utils::dbg("Nie udało się odpowiedzieć klientowi\n");
 	}
 }

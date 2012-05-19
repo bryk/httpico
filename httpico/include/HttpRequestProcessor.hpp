@@ -22,9 +22,9 @@ public:
 	virtual ~HttpRequestProcessor();
 	void process();
 private:
-	HttpRequest *httpRequest_;
-	HttpResponse *httpResponse_;
-	HttpServerConfiguration &configuration_;
+	HttpRequest *httpRequest;
+	HttpResponse *httpResponse;
+	HttpServerConfiguration &configuration;
 
 	bool parseRequest(const std::string &buf);
 	bool parseResourceName(const std::string &res);

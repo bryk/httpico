@@ -24,7 +24,7 @@ namespace Httpico {
 HttpServer::HttpServer(HttpServerConfiguration &conf) :
 		configuration(conf) {
 	//initialize signal handlers
-	Utils::initShouldExit();
+	Utils::initSignalHandlers();
 }
 
 HttpServer::~HttpServer() {
@@ -34,6 +34,7 @@ HttpServer::~HttpServer() {
 
 void HttpServer::start() {
 	Utils::log("Serwer startuje\n");
+	Utils::log("Server root: %s\n", configuration.getServerRoot().c_str());
 	initialize();
 	while (!Utils::shouldExit()) {
 		//acceptNewSocket();
@@ -48,7 +49,7 @@ void HttpServer::start() {
 			Utils::log("Zaakceptowano połączenie!!!\n");
 			HttpRequest *httpRequest = new HttpRequest(connectionFd);
 			HttpResponse *httpResponse = new HttpResponse(connectionFd);
-			HttpRequestProcessor processor(httpRequest, httpResponse);
+			HttpRequestProcessor processor(httpRequest, httpResponse, configuration);
 			processor.process();
 		}
 	}

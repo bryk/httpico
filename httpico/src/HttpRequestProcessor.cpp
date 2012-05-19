@@ -11,12 +11,16 @@
 #include "HttpServerConfiguration.hpp"
 #include "HttpResponse.hpp"
 #include "HttpResponseProcessor.hpp"
+#include "DirectoryResponseProcessor.hpp"
+#include "FileResponseProcessor.hpp"
 #include <cerrno>
 #include <cstdio>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 namespace Httpico {
 
@@ -66,37 +70,50 @@ std::vector<std::string> tokenize(const std::string &line, const std::string del
 
 HttpRequestProcessor::HttpRequestProcessor(HttpRequest * httpRequest, HttpResponse *httpResponse,
 		HttpServerConfiguration &configuration) :
-		httpRequest_(httpRequest), httpResponse_(httpResponse), configuration_(configuration) {
+		httpRequest(httpRequest), httpResponse(httpResponse), configuration(configuration) {
 }
 
 HttpRequestProcessor::~HttpRequestProcessor() {
 	Utils::dbg("Niszcze processora\n");
-	delete httpRequest_;
-	delete httpResponse_;
+	delete httpRequest;
+	delete httpResponse;
 }
 
 void HttpRequestProcessor::process() {
 	Utils::dbg("Processuje requesta\n");
-	Buffer &buf = httpRequest_->readRequest();
+	Buffer &buf = httpRequest->readRequest();
+	HttpResponseProcessor *processor = NULL;
 	if (!parseRequest(buf)) {
-		httpResponse_->state = INTERNAL_SERVER_ERROR;
+		httpResponse->state = INTERNAL_SERVER_ERROR;
 		Utils::dbg("INTERNAL SERVER ERROR\n");
 	} else {
 		std::string p;
-		p += configuration_.getServerRoot();
-		p += httpRequest_->reqestedResource;
-		Utils::dbg("Requested resource:%s\n", httpRequest_->reqestedResource.c_str());
-		char tmp[10000];
-		if (realpath(p.c_str(), tmp) == NULL) { //let's change to real path
+		p += configuration.getServerRoot();
+		p += httpRequest->reqestedResource;
+		Utils::dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
+		char rpath[10000];
+		if (realpath(p.c_str(), rpath) == NULL) { //let's change to real path
 			perror(p.c_str());
-			httpResponse_->state = NOT_FOUND;
+			httpResponse->state = NOT_FOUND;
 		} else {
-			Utils::dbg("Good path:'%s' (było: %s)\n", tmp, p.c_str());
-			httpResponse_->state = OK;
+			httpRequest->reqestedResource = rpath;
+			struct stat buf;
+			if (stat(rpath, &buf) < 0) {
+				perror(rpath);
+			}
+			if (S_ISDIR(buf.st_mode)) {
+				processor = new DirectoryResponseProcessor(*httpResponse, *httpRequest, configuration);
+			} else {
+				processor = new FileResponseProcessor(*httpResponse, *httpRequest, configuration);
+			}
+			Utils::dbg("Good path:'%s' (było: %s)\n", rpath, p.c_str());
+			httpResponse->state = OK;
 		}
 	}
-
-	HttpResponseProcessor *processor = new HttpResponseProcessor(*httpResponse_, *httpRequest_, configuration_);
+	if (processor == NULL) {
+		Utils::dbg("Nie plik ani folder\n");
+		processor = new HttpResponseProcessor(*httpResponse, *httpRequest, configuration);
+	}
 	processor->process();
 	delete processor;
 	Utils::dbg("Skończyłem processować requesta\n");
@@ -105,7 +122,7 @@ void HttpRequestProcessor::process() {
 bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	size_t qmark = res.find('?');
 	if (qmark != std::string::npos) {
-		httpRequest_->reqestedResource = res.substr(0, qmark);
+		httpRequest->reqestedResource = res.substr(0, qmark);
 		std::string args = res.substr(qmark + 1);
 		std::vector<std::string> toks = tokenize(args, "&");
 		for (size_t i = 0; i < toks.size(); i++) {
@@ -118,11 +135,12 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 			} else {
 				key = toks[i];
 			}
-			httpRequest_->setGetArg(key, value);
+			httpRequest->setGetArg(key, value);
 		}
 	} else {
-		httpRequest_->reqestedResource = res;
+		httpRequest->reqestedResource = res;
 	}
+	httpRequest->reqestedResource = Utils::urlDecode(httpRequest->reqestedResource);
 	return true;
 }
 
@@ -141,9 +159,9 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				return false; //todo
 			} else {
 				if (token[0] == "GET") {
-					httpRequest_->requestType = GET;
+					httpRequest->requestType = GET;
 				} else if (token[0] == "POST") {
-					httpRequest_->requestType = POST;
+					httpRequest->requestType = POST;
 				} else {
 					Utils::dbg("Zła metoda: %s", token[0].c_str());
 					return false; //todo
@@ -161,7 +179,7 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				} else {
 					key = line;
 				}
-				httpRequest_->setHeader(key, value);
+				httpRequest->setHeader(key, value);
 			}
 		}
 		a = b + 1;

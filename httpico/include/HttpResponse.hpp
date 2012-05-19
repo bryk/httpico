@@ -21,7 +21,7 @@ class HttpResponse {
 public:
 	explicit HttpResponse(int socketFd);
 	virtual ~HttpResponse();
-	void writeResponse(Buffer &buf);
+	void writeResponse(const Buffer &buf);
 	HttpResponseState state;
 private:
 	int socketFd_;

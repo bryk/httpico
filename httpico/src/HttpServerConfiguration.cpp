@@ -10,10 +10,19 @@
 namespace Httpico {
 
 HttpServerConfiguration::HttpServerConfiguration() :
-		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE) {
+		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE), serverRoot(getcwd(NULL, 0)) {
+
 }
 
 HttpServerConfiguration::~HttpServerConfiguration() {
+}
+
+const std::string &HttpServerConfiguration::getServerRoot() {
+	return serverRoot;
+}
+
+void HttpServerConfiguration::setServerRoot(const std::string &srv) {
+	serverRoot = srv;
 }
 
 int HttpServerConfiguration::getServerPort() {
