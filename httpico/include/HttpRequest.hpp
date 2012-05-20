@@ -30,6 +30,7 @@ public:
 	Buffer & readRequest();
 	void writeBack(Buffer &buf);
 	RequestType requestType;
+	std::string reqestedResourcePath;
 	std::string reqestedResource;
 
 	void setGetArg(const std::string &key, const std::string &value);

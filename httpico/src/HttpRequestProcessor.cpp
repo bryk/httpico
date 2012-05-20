@@ -87,26 +87,19 @@ void HttpRequestProcessor::process() {
 		httpResponse->state = INTERNAL_SERVER_ERROR;
 		Utils::dbg("INTERNAL SERVER ERROR\n");
 	} else {
-		std::string p;
-		p += configuration.getServerRoot();
-		p += httpRequest->reqestedResource;
-		Utils::dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
-		char rpath[10000];
-		if (realpath(p.c_str(), rpath) == NULL) { //let's change to real path
-			perror(p.c_str());
+		Utils::dbg("Requested resource:%s\n", httpRequest->reqestedResourcePath.c_str());
+		if (httpRequest->reqestedResourcePath == "") { //let's change to real path
 			httpResponse->state = NOT_FOUND;
 		} else {
-			httpRequest->reqestedResource = rpath;
 			struct stat buf;
-			if (stat(rpath, &buf) < 0) {
-				perror(rpath);
+			if (stat(httpRequest->reqestedResourcePath.c_str(), &buf) < 0) {
+				perror(httpRequest->reqestedResourcePath.c_str());
 			}
 			if (S_ISDIR(buf.st_mode)) {
 				processor = new DirectoryResponseProcessor(*httpResponse, *httpRequest, configuration);
 			} else {
 				processor = new FileResponseProcessor(*httpResponse, *httpRequest, configuration);
 			}
-			Utils::dbg("Good path:'%s' (było: %s)\n", rpath, p.c_str());
 			httpResponse->state = OK;
 		}
 	}
@@ -141,6 +134,20 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 		httpRequest->reqestedResource = res;
 	}
 	httpRequest->reqestedResource = Utils::urlDecode(httpRequest->reqestedResource);
+
+	Utils::dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
+	std::string path;
+	path += configuration.getServerRoot();
+	path += httpRequest->reqestedResource;
+	char *rpathBuf;
+	if ((rpathBuf = realpath(path.c_str(), NULL)) == NULL) { //let's change to real path
+		perror(path.c_str());
+		httpRequest->reqestedResourcePath = "";
+	} else {
+		httpRequest->reqestedResourcePath = rpathBuf;
+	}
+	Utils::dbg("Requested resource PATH:%s\n", httpRequest->reqestedResourcePath.c_str());
+	free(rpathBuf);
 	return true;
 }
 

@@ -55,46 +55,55 @@ void HttpResponseProcessor::process() {
 
 Buffer *HttpResponseProcessor::getContent() throw (std::exception) {
 	Utils::dbg("Zwykłe write contetn\n");
-	Buffer * resp = new Buffer();
-	*resp += "Cześć, zapytałeś się mnie metodą";
-	if (request.requestType == GET) {
-		*resp += " GET";
-	} else if (request.requestType == POST) {
-		*resp += " POST";
-	}
-	*resp += "<br>Chciałeś mieć dostęp do zasobu: '";
-	//resp += httpRequest_->reqestedResource;
-
+	Buffer content;
 	std::string p;
 	p += configuration.getServerRoot();
-	p += request.reqestedResource;
-	Utils::dbg("Requested resource:%s\n", request.reqestedResource.c_str());
-	char tmp[10000];
-	if (realpath(p.c_str(), tmp) == NULL) { //let's change to real path
-		Utils::dbg("Zła ścieżka a:'%s', b:'%s', p:'%s'\n", configuration.getServerRoot().c_str(),
-				request.reqestedResource.c_str(), p.c_str());
-		perror(NULL);
+	p += request.reqestedResourcePath;
+	Utils::dbg("Requested resource:%s\n", request.reqestedResourcePath.c_str());
+
+	std::string title = stateValueToString(response.state) + " " + stateToString(response.state);
+	content += "<div class='error'>";
+	content += title;
+	content += "</div>";
+
+	content += "<div class='requestInfo'><p class='title'>Request information</p><p>Method:";
+	if (request.requestType == GET) {
+		content += " GET";
+	} else if (request.requestType == POST) {
+		content += " POST";
 	} else {
-		Utils::dbg("Good path:'%s' (było: %s)\n", tmp, p.c_str());
-		*resp += tmp;
+		content += " UNKNOWN";
+	}
+	content += "<br/>Requested resource: '";
+	content += request.reqestedResource;
+	content += "'</p>";
+	if (request.getNumOfGetArgs() > 0) {
+		content += "<br>GET parameters:<table><tbody>";
+		for (size_t i = 0; i < request.getNumOfGetArgs(); i++) {
+			content += "<tr><td class='titleColumn'>";
+			content += request.getIthGetArg(i).first;
+			content += "</td><td>";
+			content += request.getIthGetArg(i).second;
+			content += "</td>";
+			content += "</tr>";
+		}
+		content += "</tbody></table>";
 	}
 
-	*resp += "'<br><br>Wywołałeś stronę z argumentami GET:<br>";
-	for (size_t i = 0; i < request.getNumOfGetArgs(); i++) {
-		*resp += request.getIthGetArg(i).first;
-		*resp += " = ";
-		*resp += request.getIthGetArg(i).second;
-		*resp += "<br>";
+	if (request.getNumOfHeaders() > 0) {
+		content += "<br>Request headers:<table><tbody>";
+		for (size_t i = 0; i < request.getNumOfHeaders(); i++) {
+			content += "<tr><td class='titleColumn'>";
+			content += request.getIthHeader(i).first;
+			content += "</td><td>";
+			content += request.getIthHeader(i).second;
+			content += "</td>";
+			content += "</tr>";
+		}
+		content += "</tbody></table>";
 	}
-
-	*resp += "<br><br>Wywołałeś stronę z nagłówakmi:<br>";
-	for (size_t i = 0; i < request.getNumOfHeaders(); i++) {
-		*resp += request.getIthHeader(i).first;
-		*resp += " = ";
-		*resp += request.getIthHeader(i).second;
-		*resp += "<br>";
-	}
-	return resp;
+	content += "</div>";
+	return Utils::getTempatedHtmlFile(title, content, configuration);
 }
 
 std::string HttpResponseProcessor::getContentType() {

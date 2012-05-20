@@ -27,30 +27,28 @@ DirectoryResponseProcessor::DirectoryResponseProcessor(HttpResponse &resp, HttpR
 }
 
 DirectoryResponseProcessor::~DirectoryResponseProcessor() {
-	// TODO Auto-generated destructor stub
 }
 
 Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 	Utils::dbg("DIRECTORY\n");
-	Buffer *res = new Buffer();
 	struct stat buf;
-	DIR *dp = opendir(request.reqestedResource.c_str());
+	DIR *dp = opendir(request.reqestedResourcePath.c_str());
 	if (!dp) {
-		perror(request.reqestedResource.c_str());
+		perror(request.reqestedResourcePath.c_str());
 		throw std::exception();
 	}
 	std::vector<std::string> file;
 	std::vector<std::string> fileName;
 	std::vector<std::string> dir;
 	std::vector<std::string> dirName;
-	dir.push_back(request.reqestedResource.substr(configuration.getServerRoot().size()) + "/..");
+	dir.push_back(request.reqestedResourcePath.substr(configuration.getServerRoot().size()) + "/..");
 	dirName.push_back("..");
 
 	struct dirent * ent;
 	errno = 0;
 	while ((ent = readdir(dp)) != NULL) {
 		if (errno) {
-			perror((request.reqestedResource + " readdir").c_str());
+			perror((request.reqestedResourcePath + " readdir").c_str());
 			errno = 0;
 			continue;
 		}
@@ -58,7 +56,7 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 		if (path == "." || path == "..") {
 			continue;
 		} else {
-			path = request.reqestedResource + "/" + path;
+			path = request.reqestedResourcePath + "/" + path;
 			if (stat(path.c_str(), &buf) < 0) {
 				perror("Blad stat");
 				errno = 0;
@@ -75,28 +73,34 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 		}
 	}
 	if (closedir(dp) < 0) {
-		perror(request.reqestedResource.c_str());
+		perror(request.reqestedResourcePath.c_str());
 		errno = 0;
 	}
+	std::string relative = request.reqestedResourcePath.substr(configuration.getServerRoot().size());
+	if (relative.size() == 0) {
+		relative = "/";
+	}
+	std::string title = "Index of " + relative;
+	std::string content = "<ul>";
 
-	*res += "<html><body>";
 	for (size_t i = 0; i < dir.size(); i++) {
-		*res += "<br />Katalog: <a href='";
-		*res += dir[i];
-		*res += "'>";
-		*res += dirName[i];
-		*res += "</a>";
+		content += "<li class=\"folder\"><a href=\"";
+		content += dir[i];
+		content += "\">";
+		content += dirName[i];
+		content += "</a></li>";
 	}
 
 	for (size_t i = 0; i < file.size(); i++) {
-		*res += "<br />Plik: <a href='";
-		*res += file[i];
-		*res += "'>";
-		*res += fileName[i];
-		*res += "</a>";
+		content += "<li class=\"file\"><a href=\"";
+		content += file[i];
+		content += "\">";
+		content += fileName[i];
+		content += "</a></li>";
 	}
-	*res += "</body></html>";
-	return res;
+	content += "</ul>";
+	Utils::dbg("Po DIRectory\n");
+	return Utils::getTempatedHtmlFile(title, content, configuration);
 }
 
 }

@@ -27,7 +27,7 @@ FileResponseProcessor::~FileResponseProcessor() {
 Buffer * FileResponseProcessor::getContent() throw (std::exception) {
 	Utils::dbg("File\n");
 	Buffer *ret = new Buffer();
-	FILE *f = fopen(request.reqestedResource.c_str(), "r");
+	FILE *f = fopen(request.reqestedResourcePath.c_str(), "r");
 	char buf[BUFSIZ];
 	size_t rd;
 	while ((rd = fread(buf, sizeof(char), BUFSIZ - 1, f))) {
@@ -40,7 +40,7 @@ Buffer * FileResponseProcessor::getContent() throw (std::exception) {
 }
 
 std::string FileResponseProcessor::getContentType() {
-	std::string ext = Utils::getExtenstion(request.reqestedResource);
+	std::string ext = Utils::getExtenstion(request.reqestedResourcePath);
 	std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 	Utils::dbg("Rozszerzenie: %s\n", ext.c_str());
 	if (ext == "" || ext == "txt") {

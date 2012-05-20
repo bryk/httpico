@@ -12,6 +12,7 @@
 #include <iostream>
 #include <ctime>
 #include <sstream>
+#include "HttpServerConfiguration.hpp"
 #include <string>
 
 namespace Utils {
@@ -39,6 +40,52 @@ void logToFile(FILE *f, const char *fmt, va_list args) {
 }
 
 } //namespace
+
+std::string *getTempatedHtmlFile(const std::string &title, const std::string &content,
+		Httpico::HttpServerConfiguration &conf) throw (std::exception) {
+	std::string cont;
+	FILE *f = fopen((conf.getServerTemplateRoot() + "/template.html").c_str(), "r");
+	if (!f) {
+		throw std::exception();
+	}
+	char buf[BUFSIZ];
+	size_t rd;
+	while ((rd = fread(buf, sizeof(char), BUFSIZ - 1, f))) {
+		for (size_t i = 0; i < rd; i++) {
+			cont.append(1, buf[i]);
+		}
+	}
+	fclose(f);
+	std::string titleMark = "{title}";
+	std::string contentMark = "{content}";
+	std::string *ret = new std::string();
+	size_t pos = cont.find(titleMark);
+	if (pos == std::string::npos) {
+		throw std::exception();
+	}
+	*ret = cont.substr(0, pos);
+	*ret += title;
+	size_t startPos = cont.find(titleMark);
+	size_t endPos = cont.find(contentMark);
+	if (startPos == std::string::npos || endPos == std::string::npos) {
+		throw std::exception();
+	}
+	startPos += titleMark.size();
+	for (size_t i = startPos; i < endPos; i++) {
+		*ret += cont[i];
+	}
+	*ret += content;
+
+	startPos = cont.find(contentMark) + contentMark.size();
+	endPos = cont.size();
+	if (startPos == std::string::npos || endPos == std::string::npos) {
+		throw std::exception();
+	}
+	for (size_t i = startPos; i < endPos; i++) {
+		*ret += cont[i];
+	}
+	return ret;
+}
 
 std::string getExtenstion(const std::string & val) {
 	size_t pos = val.rfind('.');

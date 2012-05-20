@@ -10,6 +10,8 @@
 
 #include <string>
 #include <sstream>
+#include "ForwardDeclarations.hpp"
+#include <exception>
 
 namespace Utils {
 
@@ -29,6 +31,7 @@ std::string toString(const T& val) {
 
 int toInt(const std::string & val, size_t base);
 std::string getExtenstion(const std::string & val);
-
+std::string *getTempatedHtmlFile(const std::string &title, const std::string &content,
+		Httpico::HttpServerConfiguration &conf) throw (std::exception);
 }
 #endif 
