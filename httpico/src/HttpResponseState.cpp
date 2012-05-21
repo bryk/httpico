@@ -20,6 +20,9 @@ std::string stateToString(HttpResponseState state) {
 	case NOT_FOUND:
 		return "Not Found";
 		break;
+	case FORBIDDEN:
+		return "Forbidden";
+		break;
 	case INTERNAL_SERVER_ERROR:
 		return "Internal Server Error";
 		break;

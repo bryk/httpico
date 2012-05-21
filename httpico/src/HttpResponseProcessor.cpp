@@ -34,6 +34,9 @@ void HttpResponseProcessor::process() {
 		buf = getContent();
 		ctype = getContentType();
 	} catch (std::exception &e) {
+		if (response.state == OK) {
+			response.state = INTERNAL_SERVER_ERROR;
+		}
 		try {
 			buf = HttpResponseProcessor::getContent();
 		} catch (std::exception &e) {

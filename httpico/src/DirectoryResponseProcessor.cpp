@@ -35,6 +35,9 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 	DIR *dp = opendir(request.reqestedResourcePath.c_str());
 	if (!dp) {
 		perror(request.reqestedResourcePath.c_str());
+		if (errno == EACCES) {
+			response.state = FORBIDDEN;
+		}
 		throw std::exception();
 	}
 	std::vector<std::string> file;

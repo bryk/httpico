@@ -1,9 +1,12 @@
-AM_CFLAGS = -Wall -g -O0
-AM_CXXFLAGS = -Wall -g -O0
+AM_CFLAGS = -Wall
+AM_CXXFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include
 
-bin_PROGRAMS = dist/httpico
-dist_httpico_SOURCES = src/Httpico.cpp \
+prefix=/usr
+datadir=/usr/share/httpico
+
+bin_PROGRAMS = httpico
+httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequest.cpp \
 						src/HttpResponse.cpp \
 						src/HttpResponseState.cpp \
@@ -14,5 +17,15 @@ dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequestProcessor.cpp \
 						src/HttpServerConfiguration.cpp \
 						src/Utils.cpp
-dist_httpico_LDFLAGS =
-		
+					
+
+srvdir = $(datadir)/srv
+imgdir = $(srvdir)/img
+dist_data_DATA = dist/template.html
+dist_img_DATA = dist/img/contentTop.png \
+				dist/img/file.png \
+				dist/img/folder.png \
+				dist/img/footerHr.png \ 
+				dist/img/headerGradient.png 
+
+

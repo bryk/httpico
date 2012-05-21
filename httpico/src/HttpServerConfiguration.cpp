@@ -10,8 +10,8 @@
 namespace Httpico {
 
 HttpServerConfiguration::HttpServerConfiguration() :
-		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE), serverRoot(getcwd(NULL, 0)), serverTemplateRoot(
-				getcwd(NULL, 0)) {
+		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE), serverRoot("/usr/share/httpico/srv"), serverTemplateRoot(
+				"/usr/share/httpico/") {
 
 }
 

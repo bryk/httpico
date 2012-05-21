@@ -13,7 +13,7 @@
 namespace Httpico {
 
 enum HttpResponseState {
-	OK = 200, NOT_FOUND = 404, INTERNAL_SERVER_ERROR = 500
+	OK = 200, NOT_FOUND = 404, INTERNAL_SERVER_ERROR = 500, FORBIDDEN = 403
 };
 
 std::string stateValueToString(HttpResponseState state);
