@@ -5,8 +5,8 @@ AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include
 prefix=/usr
 datadir=/usr/share/httpico
 
-bin_PROGRAMS = httpico
-httpico_SOURCES = src/Httpico.cpp \
+bin_PROGRAMS = dist/httpico
+dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequest.cpp \
 						src/HttpResponse.cpp \
 						src/HttpResponseState.cpp \
@@ -25,7 +25,7 @@ dist_data_DATA = dist/template.html
 dist_img_DATA = dist/img/contentTop.png \
 				dist/img/file.png \
 				dist/img/folder.png \
-				dist/img/footerHr.png \ 
+				dist/img/footerHr.png \
 				dist/img/headerGradient.png 
 
 

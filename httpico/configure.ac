@@ -7,13 +7,25 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE()
 
+AC_CONFIG_HEADERS([include/config.hpp:config.hpp.in])
+
 AC_PROG_CXX
 AC_LANG([C++])
+AC_SUBST(AM_CXXFLAGS, "-Wall")
+AC_SUBST(CXXFLAGS, "-Wall")
+
+AC_MSG_CHECKING([embedded compilation options])
+AC_ARG_ENABLE(emdedded, AS_HELP_STRING(--enable-emdedded=yes, [enable emdedded compilation]),
+[
+	AC_DEFINE(EMBEDDED, [], [enable emdedded compilation])
+    AC_MSG_RESULT(${enableval})
+    ],[
+    AC_MSG_RESULT("no")
+])
 
 AC_PROG_INSTALL
 AC_ARG_PROGRAM
-
-PREFIX=/usr/bin/
+PKG_PROG_PKG_CONFIG
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
