@@ -20,7 +20,8 @@ bool shouldExit();
 void setShouldExit();
 void log(const char *fmt, ...);
 void dbg(const char *fmt, ...);
-std::string urlDecode(const std::string &);
+std::string urlDecode(const std::string &str);
+std::string urlEncode(const std::string &str);
 
 template<class T>
 std::string toString(const T& val) {
@@ -29,7 +30,6 @@ std::string toString(const T& val) {
 	return out.str();
 }
 
-int toInt(const std::string & val, size_t base);
 std::string getExtenstion(const std::string & val);
 std::string *getTempatedHtmlFile(const std::string &title, const std::string &content,
 		Httpico::HttpServerConfiguration &conf) throw (std::exception);

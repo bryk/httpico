@@ -29,12 +29,20 @@ void HttpResponseProcessor::process() {
 	Utils::dbg("ResponseProcessor\n");
 	std::string resp;
 	std::string ctype;
-	const Buffer *buf = NULL;
+	Buffer *buf = NULL;
 	try {
 		buf = getContent();
 		ctype = getContentType();
 	} catch (std::exception &e) {
-		buf = HttpResponseProcessor::getContent();
+		try {
+			buf = HttpResponseProcessor::getContent();
+		} catch (std::exception &e) {
+			response.state = INTERNAL_SERVER_ERROR;
+			buf = new Buffer();
+			*buf = stateValueToString(response.state);
+			*buf += " ";
+			*buf += stateToString(response.state);
+		}
 		ctype = HttpResponseProcessor::getContentType();
 	}
 	resp += "HTTP/1.0 " + stateValueToString(response.state);

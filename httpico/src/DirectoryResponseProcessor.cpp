@@ -85,7 +85,7 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 
 	for (size_t i = 0; i < dir.size(); i++) {
 		content += "<li class=\"folder\"><a href=\"";
-		content += dir[i];
+		content += Utils::urlEncode(dir[i]);
 		content += "\">";
 		content += dirName[i];
 		content += "</a></li>";
@@ -93,7 +93,7 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 
 	for (size_t i = 0; i < file.size(); i++) {
 		content += "<li class=\"file\"><a href=\"";
-		content += file[i];
+		content += Utils::urlEncode(file[i]);
 		content += "\">";
 		content += fileName[i];
 		content += "</a></li>";

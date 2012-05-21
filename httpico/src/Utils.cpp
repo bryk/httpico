@@ -61,6 +61,7 @@ std::string *getTempatedHtmlFile(const std::string &title, const std::string &co
 	std::string *ret = new std::string();
 	size_t pos = cont.find(titleMark);
 	if (pos == std::string::npos) {
+		delete ret;
 		throw std::exception();
 	}
 	*ret = cont.substr(0, pos);
@@ -68,6 +69,7 @@ std::string *getTempatedHtmlFile(const std::string &title, const std::string &co
 	size_t startPos = cont.find(titleMark);
 	size_t endPos = cont.find(contentMark);
 	if (startPos == std::string::npos || endPos == std::string::npos) {
+		delete ret;
 		throw std::exception();
 	}
 	startPos += titleMark.size();
@@ -79,6 +81,7 @@ std::string *getTempatedHtmlFile(const std::string &title, const std::string &co
 	startPos = cont.find(contentMark) + contentMark.size();
 	endPos = cont.size();
 	if (startPos == std::string::npos || endPos == std::string::npos) {
+		delete ret;
 		throw std::exception();
 	}
 	for (size_t i = startPos; i < endPos; i++) {
@@ -95,25 +98,57 @@ std::string getExtenstion(const std::string & val) {
 	return "";
 }
 
-int toInt(const std::string & val, size_t base) {
+int hexInt(const std::string & val, size_t base) {
 	int ret = 0, pow = 1;
+	std::string digits = "0123456789abcdef";
 	for (int i = val.size() - 1; i >= 0; i--) {
-		ret += pow * (val[i] - '0');
+		int num = (
+				val[i] >= '0' && val[i] <= '9' ?
+						val[i] - '0' : (val[i] >= 'a' && val[i] <= 'f' ? val[i] - 'a' + 10 : val[i] - 'A' + 10));
+		ret += pow * (num);
 		pow *= base;
 	}
+	return ret;
+}
+
+std::string urlEncode(const std::string &str) {
+	std::string ret;
+	std::string digits = "0123456789abcdef";
+	std::string unsafe = "%=\"<>\\^[]`+$,@:;!#?&'";
+	bool wasUnsafe;
+	for (size_t i = 0; i < str.size(); i++) {
+		wasUnsafe = false;
+		for (size_t j = 0; j < unsafe.size(); j++) {
+			if (str[i] == unsafe[j]) {
+				ret += "%";
+				char num = str[i];
+				int r = num % 16;
+				int l = (num / 16) % 16;
+				ret += digits[l];
+				ret += digits[r];
+				wasUnsafe = true;
+				break;
+			}
+		}
+		if (!wasUnsafe) {
+			ret += str[i];
+		}
+	}
+	Utils::dbg("'%s' -> '%s'\n", str.c_str(), ret.c_str());
 	return ret;
 }
 
 std::string urlDecode(const std::string &str) {
 	std::string ret, byte;
 	size_t i = 0;
+	Utils::dbg("Dekoduje %s\n", str.c_str());
 	while (i < str.size()) {
 		if (str[i] == '%' && i + 2 < str.size()) {
 			byte = "";
 			byte += str[i + 1];
 			byte += str[i + 2];
-			Utils::dbg("Bajt: %s zmieniłem na '%c' (%d)\n", byte.c_str(), (char) toInt(byte, 16), (char) toInt(byte, 16));
-			ret += (char) toInt(byte, 16);
+			Utils::dbg("Bajt: %s zmieniłem na '%c' (%d)\n", byte.c_str(), (char) hexInt(byte, 16), hexInt(byte, 16));
+			ret += (char) hexInt(byte, 16);
 			i += 3;
 		} else {
 			ret += str[i];
