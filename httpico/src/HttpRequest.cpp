@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sstream>
 #include <string>
+#include "Logger.hpp"
 
 namespace Httpico {
 
@@ -99,12 +100,12 @@ Buffer & HttpRequest::readRequest() {
 	char recvBuf[1000];
 	while (true) {
 		int sz = recv(socketFd_, recvBuf, sizeof(recvBuf), 0);
-		Utils::dbg("Wczytałem coś....\n");
+		Logger::getInstance().dbg("Wczytałem coś....\n");
 		if (sz > 0) {
 			recvBuf[sz] = 0;
 			buffer->append(recvBuf);
 			if (endOfRequest(*buffer)) {
-				Utils::dbg("Pobrano dobre żądanie\n");
+				Logger::getInstance().dbg("Pobrano dobre żądanie\n");
 				break;
 			}
 		} else {

@@ -19,6 +19,7 @@
 #include "Utils.hpp"
 #include "HttpServerConfiguration.hpp"
 #include <vector>
+#include "Logger.hpp"
 
 namespace Httpico {
 
@@ -30,7 +31,7 @@ DirectoryResponseProcessor::~DirectoryResponseProcessor() {
 }
 
 Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
-	Utils::dbg("DIRECTORY\n");
+	Logger::getInstance().dbg("DIRECTORY\n");
 	struct stat buf;
 	DIR *dp = opendir(request.reqestedResourcePath.c_str());
 	if (!dp) {
@@ -102,7 +103,7 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 		content += "</a></li>";
 	}
 	content += "</ul>";
-	Utils::dbg("Po DIRectory\n");
+	Logger::getInstance().dbg("Po DIRectory\n");
 	return Utils::getTempatedHtmlFile(title, content, configuration);
 }
 

@@ -12,6 +12,7 @@
 #include "Utils.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "Logger.hpp"
 #include <algorithm>
 
 namespace Httpico {
@@ -21,11 +22,10 @@ FileResponseProcessor::FileResponseProcessor(HttpResponse &resp, HttpRequest &re
 }
 
 FileResponseProcessor::~FileResponseProcessor() {
-	// TODO Auto-generated destructor stub
 }
 
 Buffer * FileResponseProcessor::getContent() throw (std::exception) {
-	Utils::dbg("File\n");
+	Logger::getInstance().dbg("File\n");
 	Buffer *ret = new Buffer();
 	FILE *f = fopen(request.reqestedResourcePath.c_str(), "r");
 	char buf[BUFSIZ];
@@ -42,7 +42,7 @@ Buffer * FileResponseProcessor::getContent() throw (std::exception) {
 std::string FileResponseProcessor::getContentType() {
 	std::string ext = Utils::getExtenstion(request.reqestedResourcePath);
 	std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-	Utils::dbg("Rozszerzenie: %s\n", ext.c_str());
+	Logger::getInstance().dbg("Rozszerzenie: %s\n", ext.c_str());
 	if (ext == "" || ext == "txt") {
 		return "text/plain";
 	} else if (ext == "bmp") {

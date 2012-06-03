@@ -27,11 +27,14 @@ public:
 	void setServerRoot(const std::string &);
 	const std::string &getServerTemplateRoot();
 	void setServerTemplateRoot(const std::string &);
+	const std::string &getLoggingFolder();
+	void setLoggingFolder(const std::string &);
 private:
 	int serverPort;
 	int requestBufferSize;
 	std::string serverRoot;
 	std::string serverTemplateRoot;
+	std::string loggingFolder;
 	static const int DEFAULT_SERVER_PORT = 8888;
 	static const int REQUEST_BUFFER_SIZE = 1024 * 8;
 };

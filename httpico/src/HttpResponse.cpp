@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include "HttpResponseState.hpp"
 #include "Utils.hpp"
+#include "Logger.hpp"
 
 namespace Httpico {
 
@@ -25,7 +26,7 @@ HttpResponse::~HttpResponse() {
 void HttpResponse::writeResponse(const Buffer &buf) {
 	//Utils::dbg("Zapisuje: '%s'\n", buf.c_str());
 	if (write(socketFd_, buf.data(), sizeof(char) * buf.size()) == -1) {
-		Utils::dbg("Nie udało się odpowiedzieć klientowi\n");
+		Logger::getInstance().dbg("Nie udało się odpowiedzieć klientowi\n");
 	}
 }
 

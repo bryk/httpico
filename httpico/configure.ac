@@ -11,8 +11,8 @@ AC_CONFIG_HEADERS([include/config.hpp:config.hpp.in])
 
 AC_PROG_CXX
 AC_LANG([C++])
-AC_SUBST(AM_CXXFLAGS, "-Wall")
-AC_SUBST(CXXFLAGS, "-Wall")
+AC_SUBST(AM_CXXFLAGS, "-Wall -g")
+AC_SUBST(CXXFLAGS, "-Wall -g")
 
 AC_MSG_CHECKING([embedded compilation options])
 AC_ARG_ENABLE(emdedded, AS_HELP_STRING(--enable-emdedded=yes, [enable emdedded compilation]),

@@ -16,6 +16,7 @@ dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpServer.cpp \
 						src/HttpRequestProcessor.cpp \
 						src/HttpServerConfiguration.cpp \
+						src/Logger.cpp \
 						src/Utils.cpp
 					
 

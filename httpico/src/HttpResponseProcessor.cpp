@@ -14,6 +14,7 @@
 #include "HttpRequest.hpp"
 #include <cstdio>
 #include <cstdlib>
+#include "Logger.hpp"
 
 namespace Httpico {
 
@@ -22,11 +23,10 @@ HttpResponseProcessor::HttpResponseProcessor(HttpResponse &resp, HttpRequest &re
 }
 
 HttpResponseProcessor::~HttpResponseProcessor() {
-	// TODO Auto-generated destructor stub
 }
 
 void HttpResponseProcessor::process() {
-	Utils::dbg("ResponseProcessor\n");
+	Logger::getInstance().dbg("ResponseProcessor\n");
 	std::string resp;
 	std::string ctype;
 	Buffer *buf = NULL;
@@ -65,12 +65,12 @@ void HttpResponseProcessor::process() {
 }
 
 Buffer *HttpResponseProcessor::getContent() throw (std::exception) {
-	Utils::dbg("Zwykłe write contetn\n");
+	Logger::getInstance().dbg("Zwykłe write contetn\n");
 	Buffer content;
 	std::string p;
 	p += configuration.getServerRoot();
 	p += request.reqestedResourcePath;
-	Utils::dbg("Requested resource:%s\n", request.reqestedResourcePath.c_str());
+	Logger::getInstance().dbg("Requested resource:%s\n", request.reqestedResourcePath.c_str());
 
 	std::string title = stateValueToString(response.state) + " " + stateToString(response.state);
 	content += "<div class='error'>";

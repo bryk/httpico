@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <cstdio>
+#include "Logger.hpp"
 #include <cerrno>
 
 namespace Httpico {
@@ -28,40 +29,41 @@ HttpServer::HttpServer(HttpServerConfiguration &conf) :
 }
 
 HttpServer::~HttpServer() {
-	Utils::log("Niszczę serwer\n");
+	Logger::getInstance().log("Niszczę serwer\n");
 	close(socketFd);
 }
 
 void HttpServer::start() {
-	Utils::log("Serwer startuje\n");
-	Utils::log("Server root: %s\n", configuration.getServerRoot().c_str());
+	Logger l(configuration);
+	Logger::getInstance().log("Serwer startuje\n");
+	Logger::getInstance().log("Server root: %s\n", configuration.getServerRoot().c_str());
 	initialize();
 	while (!Utils::shouldExit()) {
 		//acceptNewSocket();
 		int connectionFd;
 		if ((connectionFd = accept(socketFd, NULL, NULL)) < 0) {
 			if (errno != EINTR) {
-				Utils::dbg("Błąd akceptowania\n");
+				Logger::getInstance().dbg("Błąd akceptowania\n");
 				perror(NULL);
 			}
 			continue;
 		} else {
-			Utils::log("Zaakceptowano połączenie!!!\n");
+			Logger::getInstance().log("Zaakceptowano połączenie!!!\n");
 			HttpRequest *httpRequest = new HttpRequest(connectionFd);
 			HttpResponse *httpResponse = new HttpResponse(connectionFd);
 			HttpRequestProcessor processor(httpRequest, httpResponse, configuration);
 			processor.process();
 		}
 	}
-	Utils::log("Zamykam serwer\n");
+	Logger::getInstance().log("Zamykam serwer\n");
 }
 
 void HttpServer::initialize() {
-	Utils::dbg("Zaczynam inicjalizować\n");
+	Logger::getInstance().dbg("Zaczynam inicjalizować\n");
 	socketFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketFd == -1) {
 		Utils::setShouldExit();
-		Utils::dbg("Krytyczny błąd\n");
+		Logger::getInstance().dbg("Krytyczny błąd\n");
 		perror(NULL);
 		return;
 	}
@@ -74,26 +76,26 @@ void HttpServer::initialize() {
 	int reuse = 1;
 	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(int)) < 0) {
 		Utils::setShouldExit();
-		Utils::dbg("setsockopt() failed\n");
+		Logger::getInstance().dbg("setsockopt() failed\n");
 		perror(NULL);
 		return;
 	}
 
 	if (bind(socketFd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
 		Utils::setShouldExit();
-		Utils::dbg("Krytyczny błąd bind\n");
+		Logger::getInstance().dbg("Krytyczny błąd bind\n");
 		perror(NULL);
 		return;
 	}
 
 	if (listen(socketFd, 1024) < 0) { //TODO unhardcode
 		Utils::setShouldExit();
-		Utils::dbg("Krytyczny błąd listen\n");
+		Logger::getInstance().dbg("Krytyczny błąd listen\n");
 		perror(NULL);
 		return;
 	}
 
-	Utils::dbg("Skończyłem inicjalizować\n");
+	Logger::getInstance().dbg("Skończyłem inicjalizować\n");
 }
 
 } //namespace

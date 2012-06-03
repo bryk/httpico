@@ -18,10 +18,10 @@ namespace Utils {
 void initSignalHandlers();
 bool shouldExit();
 void setShouldExit();
-void log(const char *fmt, ...);
-void dbg(const char *fmt, ...);
 std::string urlDecode(const std::string &str);
 std::string urlEncode(const std::string &str);
+
+std::string getTimestamp();
 
 template<class T>
 std::string toString(const T& val) {

@@ -17,14 +17,16 @@ namespace Httpico {
 #ifndef EMBEDDED
 #define DEFAULT_SERVER_ROOT "/usr/share/httpico/srv"
 #define DEFAULT_SERVER_TEMPLATE_ROOT "/usr/share/httpico/"
+#define DEFAULT_LOGGING_DIRECTORY "/usr/share/httpico/"
 #else
 #define DEFAULT_SERVER_ROOT "./"
 #define DEFAULT_SERVER_TEMPLATE_ROOT "./"
+#define DEFAULT_LOGGING_DIRECTORY "./"
 #endif
 
 HttpServerConfiguration::HttpServerConfiguration() :
 		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE), serverRoot(DEFAULT_SERVER_ROOT), serverTemplateRoot(
-				DEFAULT_SERVER_TEMPLATE_ROOT) {
+				DEFAULT_SERVER_TEMPLATE_ROOT), loggingFolder(DEFAULT_LOGGING_DIRECTORY) {
 	char *rpathBuf;
 	if ((rpathBuf = realpath(serverRoot.c_str(), NULL)) == NULL) { //let's change to real path
 		perror(serverRoot.c_str());
@@ -52,6 +54,14 @@ const std::string &HttpServerConfiguration::getServerTemplateRoot() {
 
 void HttpServerConfiguration::setServerTemplateRoot(const std::string &srv) {
 	serverTemplateRoot = srv;
+}
+
+const std::string &HttpServerConfiguration::getLoggingFolder() {
+	return loggingFolder;
+}
+
+void HttpServerConfiguration::setLoggingFolder(const std::string & log) {
+	loggingFolder = log;
 }
 
 const std::string &HttpServerConfiguration::getServerRoot() {

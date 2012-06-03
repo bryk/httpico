@@ -21,6 +21,7 @@
 #include <vector>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include "Logger.hpp"
 
 namespace Httpico {
 
@@ -74,20 +75,20 @@ HttpRequestProcessor::HttpRequestProcessor(HttpRequest * httpRequest, HttpRespon
 }
 
 HttpRequestProcessor::~HttpRequestProcessor() {
-	Utils::dbg("Niszcze processora\n");
+	Logger::getInstance().dbg("Niszcze processora\n");
 	delete httpRequest;
 	delete httpResponse;
 }
 
 void HttpRequestProcessor::process() {
-	Utils::dbg("Processuje requesta\n");
+	Logger::getInstance().dbg("Processuje requesta\n");
 	Buffer &buf = httpRequest->readRequest();
 	HttpResponseProcessor *processor = NULL;
 	if (!parseRequest(buf)) {
 		httpResponse->state = INTERNAL_SERVER_ERROR;
-		Utils::dbg("INTERNAL SERVER ERROR\n");
+		Logger::getInstance().dbg("INTERNAL SERVER ERROR\n");
 	} else {
-		Utils::dbg("Requested resource:%s\n", httpRequest->reqestedResourcePath.c_str());
+		Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResourcePath.c_str());
 		if (httpRequest->reqestedResourcePath == "") { //let's change to real path
 			httpResponse->state = NOT_FOUND;
 		} else {
@@ -104,12 +105,12 @@ void HttpRequestProcessor::process() {
 		}
 	}
 	if (processor == NULL) {
-		Utils::dbg("Nie plik ani folder\n");
+		Logger::getInstance().dbg("Nie plik ani folder\n");
 		processor = new HttpResponseProcessor(*httpResponse, *httpRequest, configuration);
 	}
 	processor->process();
 	delete processor;
-	Utils::dbg("Skończyłem processować requesta\n");
+	Logger::getInstance().dbg("Skończyłem processować requesta\n");
 }
 
 bool HttpRequestProcessor::parseResourceName(const std::string &res) {
@@ -135,7 +136,7 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	}
 	httpRequest->reqestedResource = Utils::urlDecode(httpRequest->reqestedResource);
 
-	Utils::dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
+	Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
 	std::string path;
 	path += configuration.getServerRoot();
 	path += httpRequest->reqestedResource;
@@ -146,7 +147,7 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	} else {
 		httpRequest->reqestedResourcePath = rpathBuf;
 	}
-	Utils::dbg("Requested resource PATH:%s\n", httpRequest->reqestedResourcePath.c_str());
+	Logger::getInstance().dbg("Requested resource PATH:%s\n", httpRequest->reqestedResourcePath.c_str());
 	free(rpathBuf);
 	return true;
 }
@@ -170,7 +171,7 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				} else if (token[0] == "POST") {
 					httpRequest->requestType = POST;
 				} else {
-					Utils::dbg("Zła metoda: %s", token[0].c_str());
+					Logger::getInstance().dbg("Zła metoda: %s", token[0].c_str());
 					return false; //todo
 				}
 				parseResourceName(token[1]);
