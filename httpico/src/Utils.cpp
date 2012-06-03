@@ -15,6 +15,7 @@
 #include "HttpServerConfiguration.hpp"
 #include <string>
 #include "Logger.hpp"
+#include <sys/time.h>
 #include "pthread.h"
 
 namespace Utils {
@@ -55,7 +56,7 @@ void unregisterThread() {
 
 void waitForAllThreadsToTerminate() {
 	int i = 2000; // two seconds
-	Httpico::Logger::getInstance().dbg("CZEKA\n");
+	Httpico::Logger::getInstance().dbg("Waiting for other threads to terminate\n");
 	while (1) {
 		pthread_mutex_lock(&mutex);
 		if (noThreads == 0) {
@@ -74,10 +75,12 @@ void waitForAllThreadsToTerminate() {
 
 std::string getTimestamp() {
 	char dateBuf[26];
-	time_t currTime;
-	time(&currTime);
-	strftime(dateBuf, 26, "%H:%M:%S", localtime(&(currTime)));
-	return std::string(dateBuf);
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	strftime(dateBuf, 26, "%H:%M:%S", localtime(&(tv.tv_sec)));
+	std::string ret(dateBuf);
+	ret += "." + toString((int) (tv.tv_usec / 1000));
+	return ret;
 }
 
 std::string *getTempatedHtmlFile(const std::string &title, const std::string &content,
@@ -173,21 +176,17 @@ std::string urlEncode(const std::string &str) {
 			ret += str[i];
 		}
 	}
-	Httpico::Logger::getInstance().dbg("'%s' -> '%s'\n", str.c_str(), ret.c_str());
 	return ret;
 }
 
 std::string urlDecode(const std::string &str) {
 	std::string ret, byte;
 	size_t i = 0;
-	Httpico::Logger::getInstance().dbg("Dekoduje %s\n", str.c_str());
 	while (i < str.size()) {
 		if (str[i] == '%' && i + 2 < str.size()) {
 			byte = "";
 			byte += str[i + 1];
 			byte += str[i + 2];
-			Httpico::Logger::getInstance().dbg("Bajt: %s zmieniłem na '%c' (%d)\n", byte.c_str(), (char) hexInt(byte, 16),
-					hexInt(byte, 16));
 			ret += (char) hexInt(byte, 16);
 			i += 3;
 		} else {
@@ -203,7 +202,6 @@ void setShouldExit() {
 }
 
 void sigpipeHandler(int) {
-	Httpico::Logger::getInstance().dbg("SIGPIPE\n");
 	//nothing
 }
 

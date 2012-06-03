@@ -34,45 +34,39 @@ HttpServer::~HttpServer() {
 
 void HttpServer::start() {
 	Logger l(configuration);
-	Logger::getInstance().log("Serwer startuje\n");
-	Logger::getInstance().log("Server root: %s\n", configuration.getServerRoot().c_str());
+	Logger::getInstance().dbg("Server root: %s\n", configuration.getServerRoot().c_str());
 	initialize();
+	Logger::getInstance().log("Server started\n");
 	while (!Utils::shouldExit()) {
-		//acceptNewSocket();
 		int connectionFd;
 		if ((connectionFd = accept(socketFd, NULL, NULL)) < 0) {
 			if (errno == EMFILE) {
 				usleep(1000);
 				continue;
 			} else if (errno != EINTR) {
-				Logger::getInstance().dbg("Błąd akceptowania: %d\n", errno);
-				perror(NULL);
+				Logger::getInstance().log("Error accepting connection: %s\n", sys_errlist[errno]);
 			}
 			continue;
 		} else {
-			Logger::getInstance().log("Zaakceptowano połączenie!!!\n");
 			HttpRequest *httpRequest = new HttpRequest(connectionFd);
 			HttpResponse *httpResponse = new HttpResponse(connectionFd);
 			HttpRequestProcessor *processor = new HttpRequestProcessor(httpRequest, httpResponse, configuration);
 			processor->handleRequest();
 		}
 	}
-	Logger::getInstance().log("Czekam na wątki...\n");
 	Utils::waitForAllThreadsToTerminate();
-	Logger::getInstance().log("Zamykam serwer\n");
+	Logger::getInstance().log("Closing server...\n");
 }
 
 void HttpServer::initialize() {
-	Logger::getInstance().dbg("Zaczynam inicjalizować\n");
 	socketFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketFd == -1) {
 		Utils::setShouldExit();
-		Logger::getInstance().dbg("Krytyczny błąd\n");
-		perror(NULL);
+		Logger::getInstance().log("socket() failed: %s\n", sys_errlist[errno]);
 		return;
 	}
 	struct sockaddr_in addr;
-	memset(&addr, 0, sizeof(addr)); //zerujemy
+	memset(&addr, 0, sizeof(addr)); //zeroing
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(configuration.getServerPort());
@@ -80,26 +74,21 @@ void HttpServer::initialize() {
 	int reuse = 1;
 	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(int)) < 0) {
 		Utils::setShouldExit();
-		Logger::getInstance().dbg("setsockopt() failed\n");
-		perror(NULL);
+		Logger::getInstance().log("setsockopt() failed: %s\n", sys_errlist[errno]);
 		return;
 	}
 
 	if (bind(socketFd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
 		Utils::setShouldExit();
-		Logger::getInstance().dbg("Krytyczny błąd bind\n");
-		perror(NULL);
+		Logger::getInstance().log("bind() error: %s\n", sys_errlist[errno]);
 		return;
 	}
 
 	if (listen(socketFd, 1024) < 0) { //TODO unhardcode
 		Utils::setShouldExit();
-		Logger::getInstance().dbg("Krytyczny błąd listen\n");
-		perror(NULL);
+		Logger::getInstance().log("listen() error: %s\n", sys_errlist[errno]);
 		return;
 	}
-
-	Logger::getInstance().dbg("Skończyłem inicjalizować\n");
 }
 
 } //namespace

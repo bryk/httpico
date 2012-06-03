@@ -23,6 +23,7 @@ public:
 	virtual ~HttpResponse();
 	void writeResponse(const Buffer &buf);
 	HttpResponseState state;
+	int bytesTransferred;
 private:
 	int socketFd_;
 };

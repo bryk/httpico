@@ -17,7 +17,7 @@
 
 namespace Httpico {
 
-namespace { //unnamed namespaces
+namespace { //unnamed namespace
 void logToFile(FILE *f, const char *fmt, va_list args, const char *prefix) {
 	std::ostringstream out;
 	out << prefix << " (" << Utils::getTimestamp() << "): " << fmt;
@@ -48,6 +48,7 @@ void Logger::log(const char *fmt, ...) {
 }
 
 void Logger::dbg(const char *fmt, ...) {
+	return; //todo
 	va_list args;
 	va_start(args, fmt);
 	logToFile(stderr, fmt, args, "DEBUG");
@@ -76,11 +77,9 @@ Logger::Logger(HttpServerConfiguration &c) :
 	}
 
 	instance = this;
-	dbg("Wystartował logger\n");
 }
 
 Logger::~Logger() {
-	dbg("Niszcze loggera\n");
 	fclose(logFile);
 }
 

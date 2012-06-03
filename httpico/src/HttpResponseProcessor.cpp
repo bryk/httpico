@@ -26,8 +26,7 @@ HttpResponseProcessor::~HttpResponseProcessor() {
 }
 
 void HttpResponseProcessor::process() {
-	Logger::getInstance().dbg("ResponseProcessor\n");
-	std::string resp;
+	std::string responseText;
 	std::string ctype;
 	Buffer *buf = NULL;
 	try {
@@ -48,29 +47,27 @@ void HttpResponseProcessor::process() {
 		}
 		ctype = HttpResponseProcessor::getContentType();
 	}
-	resp += "HTTP/1.0 " + stateValueToString(response.state);
-	resp += " " + stateToString(response.state);
-	resp += "\r\nServer: httpico";
-	resp += "\r\nContent-Type: ";
-	resp += ctype;
-	resp += "\r\nConnection: close";
-	resp += "\r\nContent-Length: ";
-	resp += Utils::toString(buf->size());
-	resp += "\r\n";
-	resp += "\r\n";
+	responseText += "HTTP/1.0 " + stateValueToString(response.state);
+	responseText += " " + stateToString(response.state);
+	responseText += "\r\nServer: httpico";
+	responseText += "\r\nContent-Type: ";
+	responseText += ctype;
+	responseText += "\r\nConnection: close";
+	responseText += "\r\nContent-Length: ";
+	responseText += Utils::toString(buf->size());
+	responseText += "\r\n";
+	responseText += "\r\n";
 
-	response.writeResponse(resp);
+	response.writeResponse(responseText);
 	response.writeResponse(*buf);
 	delete buf;
 }
 
 Buffer *HttpResponseProcessor::getContent() throw (std::exception) {
-	Logger::getInstance().dbg("Zwykłe write contetn\n");
 	Buffer content;
 	std::string p;
 	p += configuration.getServerRoot();
 	p += request.reqestedResourcePath;
-	Logger::getInstance().dbg("Requested resource:%s\n", request.reqestedResourcePath.c_str());
 
 	std::string title = stateValueToString(response.state) + " " + stateToString(response.state);
 	content += "<div class='error'>";

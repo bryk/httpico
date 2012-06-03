@@ -31,7 +31,6 @@ DirectoryResponseProcessor::~DirectoryResponseProcessor() {
 }
 
 Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
-	Logger::getInstance().dbg("DIRECTORY\n");
 	struct stat buf;
 	DIR *dp = opendir(request.reqestedResourcePath.c_str());
 	if (!dp) {
@@ -52,7 +51,7 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 	errno = 0;
 	while ((ent = readdir(dp)) != NULL) {
 		if (errno) {
-			perror((request.reqestedResourcePath + " readdir").c_str());
+			Logger::getInstance().dbg("readdir() error: %s\n", sys_errlist[errno]);
 			errno = 0;
 			continue;
 		}
@@ -62,7 +61,7 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 		} else {
 			path = request.reqestedResourcePath + "/" + path;
 			if (stat(path.c_str(), &buf) < 0) {
-				perror("Blad stat");
+				Logger::getInstance().dbg("stat() error: %s\n", sys_errlist[errno]);
 				errno = 0;
 				continue;
 			}
@@ -103,7 +102,6 @@ Buffer * DirectoryResponseProcessor::getContent() throw (std::exception) {
 		content += "</a></li>";
 	}
 	content += "</ul>";
-	Logger::getInstance().dbg("Po DIRectory\n");
 	return Utils::getTempatedHtmlFile(title, content, configuration);
 }
 

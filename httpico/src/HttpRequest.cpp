@@ -100,12 +100,10 @@ Buffer & HttpRequest::readRequest() {
 	char recvBuf[1000];
 	while (true) {
 		int sz = recv(socketFd_, recvBuf, sizeof(recvBuf), 0);
-		Logger::getInstance().dbg("Wczytałem coś....\n");
 		if (sz > 0) {
 			recvBuf[sz] = 0;
 			buffer->append(recvBuf);
 			if (endOfRequest(*buffer)) {
-				Logger::getInstance().dbg("Pobrano dobre żądanie\n");
 				break;
 			}
 		} else {

@@ -26,9 +26,8 @@
 
 namespace Httpico {
 
-namespace {
-
-bool isIn(char c, const std::string &del) {
+namespace { //unnamed namespace
+inline bool isIn(char c, const std::string &del) {
 	if (del.find(c) != std::string::npos) {
 		return true;
 	} else {
@@ -68,7 +67,29 @@ std::vector<std::string> tokenize(const std::string &line, const std::string del
 	return ret;
 }
 
+void *run(void * arg) {
+	pthread_detach(pthread_self());
+	Utils::initSignalHandlers();
+	if (!Utils::registerThread()) {
+		return NULL;
+	}
+	HttpRequestProcessor *processor = (HttpRequestProcessor*) arg;
+	processor->process();
+	delete processor;
+	Utils::unregisterThread();
+	return NULL;
 }
+
+void logRequest(HttpRequest *request, HttpResponse *response) {
+	std::string txt;
+	txt += request->reqestedResource + " -> ";
+	txt += stateValueToString(response->state) + " " + stateToString(response->state);
+	txt += ", transfered " + Utils::toString(response->bytesTransferred) + " bytes";
+
+	Logger::getInstance().log("%s\n", txt.c_str());
+}
+
+} //namespace
 
 HttpRequestProcessor::HttpRequestProcessor(HttpRequest * httpRequest, HttpResponse *httpResponse,
 		HttpServerConfiguration &configuration) :
@@ -76,38 +97,18 @@ HttpRequestProcessor::HttpRequestProcessor(HttpRequest * httpRequest, HttpRespon
 }
 
 HttpRequestProcessor::~HttpRequestProcessor() {
-	Logger::getInstance().dbg("Niszcze processora\n");
 	delete httpRequest;
 	delete httpResponse;
 }
 
-namespace { //unnamed namespace
-void *run(void * arg) {
-	Logger::getInstance().dbg("Wątek o tid: 0x%lx ruszył\n", pthread_self());
-	pthread_detach(pthread_self());
-	Utils::initSignalHandlers();
-	if (!Utils::registerThread()) {
-		Logger::getInstance().dbg("niestety - nie mogę ruszyć\n");
-		return NULL;
-	}
-	HttpRequestProcessor *processor = (HttpRequestProcessor*) arg;
-	processor->process();
-	delete processor;
-	Logger::getInstance().dbg("Wątek o tid: 0x%lx ZNIKKKKKA\n", pthread_self());
-	Utils::unregisterThread();
-	return NULL;
-}
-} //namespace
-
 void HttpRequestProcessor::process() {
-	Logger::getInstance().dbg("Processuje requesta\n");
 	Buffer &buf = httpRequest->readRequest();
 	HttpResponseProcessor *processor = NULL;
 	if (!parseRequest(buf)) {
 		httpResponse->state = INTERNAL_SERVER_ERROR;
 		Logger::getInstance().dbg("INTERNAL SERVER ERROR\n");
 	} else {
-		Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResourcePath.c_str());
+		Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
 		if (httpRequest->reqestedResourcePath == "") { //let's change to real path
 			httpResponse->state = NOT_FOUND;
 		} else {
@@ -124,18 +125,18 @@ void HttpRequestProcessor::process() {
 		}
 	}
 	if (processor == NULL) {
-		Logger::getInstance().dbg("Nie plik ani folder\n");
 		processor = new HttpResponseProcessor(*httpResponse, *httpRequest, configuration);
 	}
 	processor->process();
+	logRequest(httpRequest, httpResponse);
 	delete processor;
-	Logger::getInstance().dbg("Skończyłem processować requesta\n");
 }
 
 void HttpRequestProcessor::handleRequest() {
 	pthread_t tid;
 	if (pthread_create(&tid, NULL, run, this) != 0) {
-		Logger::getInstance().dbg("Nie udało się uruchomić nowego wątku\n");
+		Logger::getInstance().dbg("Couldn't run new thread\n");
+		delete this; //suicide
 	}
 }
 
@@ -162,18 +163,16 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	}
 	httpRequest->reqestedResource = Utils::urlDecode(httpRequest->reqestedResource);
 
-	Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
 	std::string path;
 	path += configuration.getServerRoot();
 	path += httpRequest->reqestedResource;
 	char *rpathBuf;
 	if ((rpathBuf = realpath(path.c_str(), NULL)) == NULL) { //let's change to real path
-		perror(path.c_str());
+		Logger::getInstance().dbg("%s: %s\n", path.c_str(), sys_errlist[errno]);
 		httpRequest->reqestedResourcePath = "";
 	} else {
 		httpRequest->reqestedResourcePath = rpathBuf;
 	}
-	Logger::getInstance().dbg("Requested resource PATH:%s\n", httpRequest->reqestedResourcePath.c_str());
 	free(rpathBuf);
 	return true;
 }
@@ -186,7 +185,6 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 			b++;
 		}
 		std::string line = buf.substr(a, b - a + 1);
-		//Utils::dbg("Wczytano linię: %s", line.c_str());
 		if (lineNum == 0) {
 			std::vector<std::string> token = tokenize(line);
 			if (token.size() < 2) {
@@ -197,7 +195,6 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				} else if (token[0] == "POST") {
 					httpRequest->requestType = POST;
 				} else {
-					Logger::getInstance().dbg("Zła metoda: %s", token[0].c_str());
 					return false; //todo
 				}
 				parseResourceName(token[1]);

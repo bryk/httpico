@@ -15,7 +15,7 @@
 namespace Httpico {
 
 HttpResponse::HttpResponse(int sockketFd) :
-		state(INTERNAL_SERVER_ERROR), socketFd_(sockketFd) {
+		state(INTERNAL_SERVER_ERROR), bytesTransferred(0), socketFd_(sockketFd) {
 
 }
 
@@ -25,10 +25,10 @@ HttpResponse::~HttpResponse() {
 }
 
 void HttpResponse::writeResponse(const Buffer &buf) {
-	//Utils::dbg("Zapisuje: '%s'\n", buf.c_str());
 	if (write(socketFd_, buf.data(), sizeof(char) * buf.size()) == -1) {
-		Logger::getInstance().dbg("Nie udało się odpowiedzieć klientowi\n");
+		Logger::getInstance().dbg("Couldn't send data to the client\n");
 	}
+	bytesTransferred += buf.size();
 }
 
 }

@@ -25,7 +25,6 @@ FileResponseProcessor::~FileResponseProcessor() {
 }
 
 Buffer * FileResponseProcessor::getContent() throw (std::exception) {
-	Logger::getInstance().dbg("File\n");
 	Buffer *ret = new Buffer();
 	FILE *f = fopen(request.reqestedResourcePath.c_str(), "r");
 	char buf[BUFSIZ];
@@ -42,7 +41,6 @@ Buffer * FileResponseProcessor::getContent() throw (std::exception) {
 std::string FileResponseProcessor::getContentType() {
 	std::string ext = Utils::getExtenstion(request.reqestedResourcePath);
 	std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-	Logger::getInstance().dbg("Rozszerzenie: %s\n", ext.c_str());
 	if (ext == "" || ext == "txt") {
 		return "text/plain";
 	} else if (ext == "bmp") {
