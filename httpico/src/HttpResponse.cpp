@@ -21,6 +21,7 @@ HttpResponse::HttpResponse(int sockketFd) :
 
 HttpResponse::~HttpResponse() {
 	shutdown(socketFd_, 1);
+	close(socketFd_);
 }
 
 void HttpResponse::writeResponse(const Buffer &buf) {

@@ -20,8 +20,11 @@ bool shouldExit();
 void setShouldExit();
 std::string urlDecode(const std::string &str);
 std::string urlEncode(const std::string &str);
-
 std::string getTimestamp();
+
+bool registerThread();
+void unregisterThread();
+void waitForAllThreadsToTerminate();
 
 template<class T>
 std::string toString(const T& val) {

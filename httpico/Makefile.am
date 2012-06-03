@@ -1,7 +1,6 @@
 AM_CFLAGS = -Wall
 AM_CXXFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include
-
 prefix=/usr
 datadir=/usr/share/httpico
 
@@ -19,6 +18,8 @@ dist_httpico_SOURCES = src/Httpico.cpp \
 						src/Logger.cpp \
 						src/Utils.cpp
 					
+
+dist_httpico_LDADD = -lpthread
 
 srvdir = $(datadir)/srv
 imgdir = $(srvdir)/img

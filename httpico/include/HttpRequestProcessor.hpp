@@ -20,6 +20,7 @@ class HttpRequestProcessor {
 public:
 	explicit HttpRequestProcessor(HttpRequest *, HttpResponse *, HttpServerConfiguration &configuration);
 	virtual ~HttpRequestProcessor();
+	void handleRequest();
 	void process();
 private:
 	HttpRequest *httpRequest;

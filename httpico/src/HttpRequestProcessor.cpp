@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include "pthread.h"
 #include <vector>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -80,6 +81,24 @@ HttpRequestProcessor::~HttpRequestProcessor() {
 	delete httpResponse;
 }
 
+namespace { //unnamed namespace
+void *run(void * arg) {
+	Logger::getInstance().dbg("Wątek o tid: 0x%lx ruszył\n", pthread_self());
+	pthread_detach(pthread_self());
+	Utils::initSignalHandlers();
+	if (!Utils::registerThread()) {
+		Logger::getInstance().dbg("niestety - nie mogę ruszyć\n");
+		return NULL;
+	}
+	HttpRequestProcessor *processor = (HttpRequestProcessor*) arg;
+	processor->process();
+	delete processor;
+	Logger::getInstance().dbg("Wątek o tid: 0x%lx ZNIKKKKKA\n", pthread_self());
+	Utils::unregisterThread();
+	return NULL;
+}
+} //namespace
+
 void HttpRequestProcessor::process() {
 	Logger::getInstance().dbg("Processuje requesta\n");
 	Buffer &buf = httpRequest->readRequest();
@@ -111,6 +130,13 @@ void HttpRequestProcessor::process() {
 	processor->process();
 	delete processor;
 	Logger::getInstance().dbg("Skończyłem processować requesta\n");
+}
+
+void HttpRequestProcessor::handleRequest() {
+	pthread_t tid;
+	if (pthread_create(&tid, NULL, run, this) != 0) {
+		Logger::getInstance().dbg("Nie udało się uruchomić nowego wątku\n");
+	}
 }
 
 bool HttpRequestProcessor::parseResourceName(const std::string &res) {

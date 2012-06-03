@@ -15,6 +15,7 @@
 #include "HttpServerConfiguration.hpp"
 #include <string>
 #include "Logger.hpp"
+#include "pthread.h"
 
 namespace Utils {
 
@@ -28,7 +29,48 @@ void sigIntHandler(int signo) {
 void sigAlrmHandler(int signo) {
 }
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+volatile int noThreads = 0;
+volatile bool dontAllow = false;
+
 } //namespace
+
+bool registerThread() {
+	pthread_mutex_lock(&mutex);
+	if (dontAllow) {
+		pthread_mutex_unlock(&mutex);
+		return false;
+	} else {
+		noThreads++;
+		pthread_mutex_unlock(&mutex);
+		return true;
+	}
+}
+
+void unregisterThread() {
+	pthread_mutex_lock(&mutex);
+	noThreads--;
+	pthread_mutex_unlock(&mutex);
+}
+
+void waitForAllThreadsToTerminate() {
+	int i = 2000; // two seconds
+	Httpico::Logger::getInstance().dbg("CZEKA\n");
+	while (1) {
+		pthread_mutex_lock(&mutex);
+		if (noThreads == 0) {
+			dontAllow = true;
+			pthread_mutex_unlock(&mutex);
+			return;
+		} else {
+			pthread_mutex_unlock(&mutex);
+			usleep(1000);
+			if (i-- == 0) {
+				return;
+			}
+		}
+	}
+}
 
 std::string getTimestamp() {
 	char dateBuf[26];

@@ -29,7 +29,6 @@ HttpServer::HttpServer(HttpServerConfiguration &conf) :
 }
 
 HttpServer::~HttpServer() {
-	Logger::getInstance().log("Niszczę serwer\n");
 	close(socketFd);
 }
 
@@ -42,8 +41,11 @@ void HttpServer::start() {
 		//acceptNewSocket();
 		int connectionFd;
 		if ((connectionFd = accept(socketFd, NULL, NULL)) < 0) {
-			if (errno != EINTR) {
-				Logger::getInstance().dbg("Błąd akceptowania\n");
+			if (errno == EMFILE) {
+				usleep(1000);
+				continue;
+			} else if (errno != EINTR) {
+				Logger::getInstance().dbg("Błąd akceptowania: %d\n", errno);
 				perror(NULL);
 			}
 			continue;
@@ -51,10 +53,12 @@ void HttpServer::start() {
 			Logger::getInstance().log("Zaakceptowano połączenie!!!\n");
 			HttpRequest *httpRequest = new HttpRequest(connectionFd);
 			HttpResponse *httpResponse = new HttpResponse(connectionFd);
-			HttpRequestProcessor processor(httpRequest, httpResponse, configuration);
-			processor.process();
+			HttpRequestProcessor *processor = new HttpRequestProcessor(httpRequest, httpResponse, configuration);
+			processor->handleRequest();
 		}
 	}
+	Logger::getInstance().log("Czekam na wątki...\n");
+	Utils::waitForAllThreadsToTerminate();
 	Logger::getInstance().log("Zamykam serwer\n");
 }
 
