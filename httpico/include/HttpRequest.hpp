@@ -27,11 +27,14 @@ public:
 	explicit HttpRequest(int socketFd);
 	virtual ~HttpRequest();
 
+	static std::string requestTypeToString(RequestType req);
+
 	Buffer & readRequest();
 	void writeBack(Buffer &buf);
 	RequestType requestType;
 	std::string reqestedResourcePath;
 	std::string reqestedResource;
+	std::string clientAddress;
 
 	void setGetArg(const std::string &key, const std::string &value);
 	const std::string &getGetArg(const std::string &key);

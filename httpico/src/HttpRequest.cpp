@@ -14,6 +14,8 @@
 #include <string.h>
 #include <sstream>
 #include <string>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "Logger.hpp"
 
 namespace Httpico {
@@ -86,8 +88,29 @@ const std::string &HttpRequest::getHeader(const std::string &key) {
 	return header[key];
 }
 
+std::string HttpRequest::requestTypeToString(RequestType req) {
+	if (req == GET) {
+		return "GET";
+	} else if (req == POST) {
+		return "POST";
+	} else if (req == UNKNOWN) {
+		return "UNKNOWN";
+	} else {
+		return "UNKNOWN";
+	}
+}
+
 HttpRequest::HttpRequest(int socketFd) :
-		socketFd_(socketFd) {
+		requestType(UNKNOWN), socketFd_(socketFd) {
+
+	struct sockaddr_in m_addr;
+	socklen_t len = sizeof m_addr;
+	getpeername(socketFd_, (struct sockaddr*) &m_addr, &len);
+	char buf[INET_ADDRSTRLEN];
+	const char *ret = inet_ntop(AF_INET, &m_addr.sin_addr, buf, INET_ADDRSTRLEN);
+	if (ret != NULL) {
+		clientAddress = buf;
+	}
 }
 
 HttpRequest::~HttpRequest() {

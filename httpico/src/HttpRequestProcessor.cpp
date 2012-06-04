@@ -82,9 +82,11 @@ void *run(void * arg) {
 
 void logRequest(HttpRequest *request, HttpResponse *response) {
 	std::string txt;
-	txt += request->reqestedResource + " -> ";
+	txt += request->clientAddress + " " + HttpRequest::requestTypeToString(request->requestType) + " ";
+	txt += "'" + request->reqestedResource + "'";
+	txt += " -> ";
 	txt += stateValueToString(response->state) + " " + stateToString(response->state);
-	txt += ", transfered " + Utils::toString(response->bytesTransferred) + " bytes";
+	txt += ", transferred " + Utils::toString(response->bytesTransferred) + " bytes";
 
 	Logger::getInstance().log("%s\n", txt.c_str());
 }
@@ -104,17 +106,19 @@ HttpRequestProcessor::~HttpRequestProcessor() {
 void HttpRequestProcessor::process() {
 	Buffer &buf = httpRequest->readRequest();
 	HttpResponseProcessor *processor = NULL;
-	if (!parseRequest(buf)) {
+	if (!parseRequest(buf) || httpRequest->requestType == UNKNOWN) {
 		httpResponse->state = INTERNAL_SERVER_ERROR;
 		Logger::getInstance().dbg("INTERNAL SERVER ERROR\n");
 	} else {
 		Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
-		if (httpRequest->reqestedResourcePath == "") { //let's change to real path
+		if (httpRequest->reqestedResourcePath == "") {
+			Logger::getInstance().log("CPuste\n");
 			httpResponse->state = NOT_FOUND;
 		} else {
 			struct stat buf;
 			if (stat(httpRequest->reqestedResourcePath.c_str(), &buf) < 0) {
-				perror(httpRequest->reqestedResourcePath.c_str());
+				Logger::getInstance().dbg("stat() error %s: %s\n", httpRequest->reqestedResourcePath.c_str(),
+						sys_errlist[errno]);
 			}
 			if (S_ISDIR(buf.st_mode)) {
 				processor = new DirectoryResponseProcessor(*httpResponse, *httpRequest, configuration);
@@ -167,7 +171,7 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	path += configuration.getServerRoot();
 	path += httpRequest->reqestedResource;
 	char *rpathBuf;
-	if ((rpathBuf = realpath(path.c_str(), NULL)) == NULL) { //let's change to real path
+	if ((rpathBuf = canonicalize_file_name(path.c_str())) == NULL) { //let's change to real path
 		Logger::getInstance().dbg("%s: %s\n", path.c_str(), sys_errlist[errno]);
 		httpRequest->reqestedResourcePath = "";
 	} else {
@@ -188,6 +192,7 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 		if (lineNum == 0) {
 			std::vector<std::string> token = tokenize(line);
 			if (token.size() < 2) {
+				Logger::getInstance().dbg("Error. Size: %d, val:%s\n", token.size(), token[0].c_str());
 				return false; //todo
 			} else {
 				if (token[0] == "GET") {
@@ -195,6 +200,8 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				} else if (token[0] == "POST") {
 					httpRequest->requestType = POST;
 				} else {
+					httpRequest->requestType = UNKNOWN;
+					Logger::getInstance().dbg("Unknown method: '%s'\n", token[0].c_str());
 					return false; //todo
 				}
 				parseResourceName(token[1]);
