@@ -20,7 +20,7 @@ namespace Httpico {
 namespace { //unnamed namespace
 void logToFile(FILE *f, const char *fmt, va_list args, const char *prefix) {
 	std::ostringstream out;
-	out << prefix << " (" << Utils::getTimestamp() << ", TID: " << pthread_self() << "): " << fmt;
+	out << prefix << " (" << Utils::getTimestamp() << "): " << fmt;
 	vfprintf(f, out.str().c_str(), args);
 	fflush(f);
 }
