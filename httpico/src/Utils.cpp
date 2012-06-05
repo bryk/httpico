@@ -221,6 +221,16 @@ std::string urlEncode(const std::string &str) {
 	return ret;
 }
 
+std::string& replaceAll(std::string &str, const std::string & from, const std::string & to) {
+	int position = str.find(from); // find first space
+
+	while (position != std::string::npos) {
+		str.replace(position, to.size(), to);
+		position = str.find(from, position + 1);
+	}
+	return str;
+}
+
 std::string urlDecode(const std::string &str) {
 	std::string ret, byte;
 	size_t i = 0;

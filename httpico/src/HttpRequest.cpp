@@ -20,7 +20,7 @@
 
 namespace Httpico {
 
-namespace {
+namespace { //unnamed namespace
 bool endOfRequest(Buffer &buf) {
 	std::string endIndicator = "\r\n\r\n";
 	std::string lengthIndicator = "Content-Length:";
@@ -46,26 +46,43 @@ bool endOfRequest(Buffer &buf) {
 		return false;
 	}
 }
-}
 
-const std::pair<std::string, std::string> HttpRequest::getIthHeader(size_t i) {
-	std::map<std::string, std::string>::iterator it = header.begin();
+const std::pair<std::string, std::string> getIthFromMap(size_t i, std::map<std::string, std::string> &map) {
+	std::map<std::string, std::string>::iterator it = map.begin();
 	while (i--) {
 		it++;
 	}
 	return *it;
+}
+
+} //namespace
+
+const std::pair<std::string, std::string> HttpRequest::getIthHeader(size_t i) {
+	return getIthFromMap(i, header);
 }
 
 const size_t HttpRequest::getNumOfHeaders() {
 	return header.size();
 }
 
+const std::pair<std::string, std::string> HttpRequest::getIthPostArg(size_t i) {
+	return getIthFromMap(i, postArgs);
+}
+
+const size_t HttpRequest::getNumOfPostArgs() {
+	return postArgs.size();
+}
+
+void HttpRequest::setPostArg(const std::string &key, const std::string &value) {
+	postArgs[key] = value;
+}
+
+const std::string &HttpRequest::getPostArg(const std::string &key) {
+	return postArgs[key];
+}
+
 const std::pair<std::string, std::string> HttpRequest::getIthGetArg(size_t i) {
-	std::map<std::string, std::string>::iterator it = getArgs.begin();
-	while (i--) {
-		it++;
-	}
-	return *it;
+	return getIthFromMap(i, getArgs);
 }
 
 const size_t HttpRequest::getNumOfGetArgs() {

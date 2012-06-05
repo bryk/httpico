@@ -41,6 +41,11 @@ public:
 	const std::pair<std::string, std::string> getIthGetArg(size_t i);
 	const size_t getNumOfGetArgs();
 
+	void setPostArg(const std::string &key, const std::string &value);
+	const std::string &getPostArg(const std::string &key);
+	const std::pair<std::string, std::string> getIthPostArg(size_t i);
+	const size_t getNumOfPostArgs();
+
 	void setHeader(const std::string &key, const std::string &value);
 	const std::string &getHeader(const std::string &key);
 	const std::pair<std::string, std::string> getIthHeader(size_t i);
@@ -49,6 +54,7 @@ private:
 	int socketFd_;
 	std::map<std::string, std::string> header;
 	std::map<std::string, std::string> getArgs;
+	std::map<std::string, std::string> postArgs;
 };
 } //namespace
 

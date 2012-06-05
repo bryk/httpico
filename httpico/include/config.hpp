@@ -5,7 +5,7 @@
 /* #undef DEBUGLOGS */
 
 /* enable emdedded compilation */
-/* #undef EMBEDDED */
+#define EMBEDDED /**/
 
 /* Name of package */
 #define PACKAGE "httpico"

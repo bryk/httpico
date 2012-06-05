@@ -141,8 +141,30 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	return true;
 }
 
+bool HttpRequestProcessor::parsePostData(const std::string &buf) {
+	if (Utils::trim(buf) == "") {
+		return true;
+	}
+	std::vector<std::string> toks = Utils::tokenize(buf, "&");
+	for (size_t i = 0; i < toks.size(); i++) {
+		size_t eqPos = toks[i].find('=');
+		std::string key;
+		std::string value;
+		if (eqPos != std::string::npos) {
+			key = toks[i].substr(0, eqPos);
+			value = toks[i].substr(eqPos + 1);
+			value = Utils::urlDecode(Utils::replaceAll(value, "+", " "));
+		} else {
+			key = toks[i];
+		}
+		httpRequest->setPostArg(key, value);
+	}
+	return true;
+}
+
 bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 	size_t a = 0, lineNum = 0;
+	bool foundContent = false;
 	while (a < buf.size()) {
 		size_t b = a;
 		while (b < buf.size() && buf[b] != '\n') {
@@ -167,17 +189,27 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				parseResourceName(token[1]);
 			}
 		} else {
-			if (line.size() != 2) {
-				size_t semPos = line.find(':');
-				std::string key;
-				std::string value;
-				if (semPos != std::string::npos) {
-					key = line.substr(0, semPos);
-					value = Utils::trim(line.substr(semPos + 1));
-				} else {
-					key = line;
+			if (!foundContent && Utils::trim(line) == "") {
+				foundContent = true;
+			}
+
+			if (foundContent) {
+				if (httpRequest->requestType == POST) {
+					parsePostData(line);
 				}
-				httpRequest->setHeader(key, value);
+			} else {
+				if (line.size() != 2) {
+					size_t semPos = line.find(':');
+					std::string key;
+					std::string value;
+					if (semPos != std::string::npos) {
+						key = line.substr(0, semPos);
+						value = Utils::trim(line.substr(semPos + 1));
+					} else {
+						key = line;
+					}
+					httpRequest->setHeader(key, value);
+				}
 			}
 		}
 		a = b + 1;

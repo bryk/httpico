@@ -85,6 +85,19 @@ Buffer *HttpResponseProcessor::getContent() throw (std::exception) {
 	content += "<br/>Requested resource: '";
 	content += request.reqestedResource;
 	content += "'</p>";
+	if (request.getNumOfPostArgs() > 0) {
+		content += "<br>POST parameters:<table><tbody>";
+		for (size_t i = 0; i < request.getNumOfPostArgs(); i++) {
+			content += "<tr><td class='titleColumn'>";
+			content += request.getIthPostArg(i).first;
+			content += "</td><td>";
+			content += request.getIthPostArg(i).second;
+			content += "</td>";
+			content += "</tr>";
+		}
+		content += "</tbody></table>";
+	}
+
 	if (request.getNumOfGetArgs() > 0) {
 		content += "<br>GET parameters:<table><tbody>";
 		for (size_t i = 0; i < request.getNumOfGetArgs(); i++) {

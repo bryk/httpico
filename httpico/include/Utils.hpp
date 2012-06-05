@@ -37,6 +37,7 @@ std::string toString(const T& val) {
 std::string trim(const std::string &str);
 inline bool isIn(char c, const std::string &del);
 std::vector<std::string> tokenize(const std::string &line, const std::string del = "\n\r\t ");
+std::string& replaceAll(std::string &str, const std::string & from, const std::string & to);
 
 std::string getExtenstion(const std::string & val);
 std::string *getTempatedHtmlFile(const std::string &title, const std::string &content,

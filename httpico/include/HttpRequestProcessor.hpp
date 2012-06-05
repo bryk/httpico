@@ -28,6 +28,7 @@ private:
 	HttpServerConfiguration &configuration;
 
 	bool parseRequest(const std::string &buf);
+	bool parsePostData(const std::string &buf);
 	bool parseResourceName(const std::string &res);
 };
 
