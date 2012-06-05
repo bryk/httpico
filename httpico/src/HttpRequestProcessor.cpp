@@ -27,45 +27,6 @@
 namespace Httpico {
 
 namespace { //unnamed namespace
-inline bool isIn(char c, const std::string &del) {
-	if (del.find(c) != std::string::npos) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-std::string trim(const std::string &str) {
-	size_t a = 0, b = str.size();
-	std::string del("\n\r\t ");
-	while (a < str.size() && isIn(str[a], del)) {
-		a++;
-	}
-	while (b > a && isIn(str[b], del)) {
-		b--;
-	}
-	return str.substr(a, b - a);
-}
-
-std::vector<std::string> tokenize(const std::string &line, const std::string del = "\n\r\t ") {
-	size_t a = 0, b = 0;
-	std::vector<std::string> ret;
-	while (a < line.size() && isIn(line[a], del)) {
-		a++;
-	}
-	while (a < line.size()) {
-		b = a;
-		while (b < line.size() && !isIn(line[b], del)) {
-			b++;
-		}
-		ret.push_back(line.substr(a, b - a));
-		a = b;
-		while (a < line.size() && isIn(line[a], del)) {
-			a++;
-		}
-	}
-	return ret;
-}
 
 void *run(void * arg) {
 	pthread_detach(pthread_self());
@@ -112,7 +73,6 @@ void HttpRequestProcessor::process() {
 	} else {
 		Logger::getInstance().dbg("Requested resource:%s\n", httpRequest->reqestedResource.c_str());
 		if (httpRequest->reqestedResourcePath == "") {
-			Logger::getInstance().log("CPuste\n");
 			httpResponse->state = NOT_FOUND;
 		} else {
 			struct stat buf;
@@ -149,7 +109,7 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 	if (qmark != std::string::npos) {
 		httpRequest->reqestedResource = res.substr(0, qmark);
 		std::string args = res.substr(qmark + 1);
-		std::vector<std::string> toks = tokenize(args, "&");
+		std::vector<std::string> toks = Utils::tokenize(args, "&");
 		for (size_t i = 0; i < toks.size(); i++) {
 			size_t eqPos = toks[i].find('=');
 			std::string key;
@@ -190,7 +150,7 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 		}
 		std::string line = buf.substr(a, b - a + 1);
 		if (lineNum == 0) {
-			std::vector<std::string> token = tokenize(line);
+			std::vector<std::string> token = Utils::tokenize(line);
 			if (token.size() < 2) {
 				Logger::getInstance().dbg("Error. Size: %d, val:%s\n", token.size(), token[0].c_str());
 				return false; //todo
@@ -213,7 +173,7 @@ bool HttpRequestProcessor::parseRequest(const std::string &buf) {
 				std::string value;
 				if (semPos != std::string::npos) {
 					key = line.substr(0, semPos);
-					value = trim(line.substr(semPos + 1));
+					value = Utils::trim(line.substr(semPos + 1));
 				} else {
 					key = line;
 				}

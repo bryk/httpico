@@ -13,6 +13,7 @@
 #include <iostream>
 #include <ctime>
 #include <sstream>
+#include "config.hpp"
 #include "Utils.hpp"
 
 namespace Httpico {
@@ -30,10 +31,22 @@ void logToFile(FILE *f, const char *fmt, va_list args, const char *prefix) {
 Logger *Logger::instance = NULL;
 
 void Logger::fallbackLog(const char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	logToFile(stderr, fmt, args, "FATAL ERROR");
-	va_end(args);
+	if (instance == NULL) {
+		va_list args;
+		va_start(args, fmt);
+		logToFile(stderr, fmt, args, "FATAL ERROR");
+		va_end(args);
+	} else {
+		va_list args;
+		va_start(args, fmt);
+		logToFile(stderr, fmt, args, "FATAL ERROR");
+		va_end(args);
+		if (instance->logFile != NULL) {
+			va_start(args, fmt);
+			logToFile(instance->logFile, fmt, args, "FATAL ERROR");
+			va_end(args);
+		}
+	}
 }
 
 void Logger::log(const char *fmt, ...) {
@@ -48,7 +61,7 @@ void Logger::log(const char *fmt, ...) {
 }
 
 void Logger::dbg(const char *fmt, ...) {
-	return; //todo
+#ifdef DEBUGLOGS
 	va_list args;
 	va_start(args, fmt);
 	logToFile(stderr, fmt, args, "DEBUG");
@@ -58,6 +71,7 @@ void Logger::dbg(const char *fmt, ...) {
 		logToFile(logFile, fmt, args, "DEBUG");
 		va_end(args);
 	}
+#endif
 }
 
 Logger &Logger::getInstance() {
@@ -80,7 +94,9 @@ Logger::Logger(HttpServerConfiguration &c) :
 }
 
 Logger::~Logger() {
-	fclose(logFile);
+	if (logFile != NULL) {
+		fclose(logFile);
+	}
 }
 
 } //namespace Httpico

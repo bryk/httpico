@@ -1,5 +1,8 @@
 /* config.hpp.in.  Generated from configure.ac by autoheader.  */
 
+/* enable debugging logs */
+#undef DEBUGLOGS
+
 /* enable emdedded compilation */
 #undef EMBEDDED
 

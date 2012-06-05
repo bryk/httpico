@@ -77,9 +77,51 @@ std::string getTimestamp() {
 	char dateBuf[26];
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	strftime(dateBuf, 26, "%H:%M:%S", localtime(&(tv.tv_sec)));
+	strftime(dateBuf, 26, "%Y-%m-%d_%H:%M:%S", localtime(&(tv.tv_sec)));
 	std::string ret(dateBuf);
 	ret += "." + toString((int) (tv.tv_usec / 1000));
+	return ret;
+}
+
+std::string trim(const std::string &str) {
+	size_t a = 0, b = str.size() - 1;
+	std::string del("\n\r\t ");
+	while (a < str.size() && isIn(str[a], del)) {
+		a++;
+	}
+	while (b > a && isIn(str[b], del)) {
+		b--;
+	}
+	std::string ret = str.substr(a, b - a + 1);
+	return ret;
+}
+
+inline bool isIn(char c, const std::string &del) {
+	for (size_t i = 0; i < del.size(); i++) {
+		if (del[i] == c) {
+			return true;
+		}
+	}
+	return false;
+}
+
+std::vector<std::string> tokenize(const std::string &line, const std::string del) {
+	size_t a = 0, b = 0;
+	std::vector<std::string> ret;
+	while (a < line.size() && isIn(line[a], del)) {
+		a++;
+	}
+	while (a < line.size()) {
+		b = a;
+		while (b < line.size() && !isIn(line[b], del)) {
+			b++;
+		}
+		ret.push_back(line.substr(a, b - a));
+		a = b;
+		while (a < line.size() && isIn(line[a], del)) {
+			a++;
+		}
+	}
 	return ret;
 }
 

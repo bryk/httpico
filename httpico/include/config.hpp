@@ -1,8 +1,11 @@
 /* include/config.hpp.  Generated from config.hpp.in by configure.  */
 /* config.hpp.in.  Generated from configure.ac by autoheader.  */
 
+/* enable debugging logs */
+/* #undef DEBUGLOGS */
+
 /* enable emdedded compilation */
-#define EMBEDDED /**/
+/* #undef EMBEDDED */
 
 /* Name of package */
 #define PACKAGE "httpico"

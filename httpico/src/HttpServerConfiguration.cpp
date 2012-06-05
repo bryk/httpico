@@ -11,33 +11,56 @@
 #include <cerrno>
 #include <cstdio>
 #include "Utils.hpp"
+#include "Logger.hpp"
 
 namespace Httpico {
 
 #ifndef EMBEDDED
 #define DEFAULT_SERVER_ROOT "/usr/share/httpico/srv"
 #define DEFAULT_SERVER_TEMPLATE_ROOT "/usr/share/httpico/"
-#define DEFAULT_LOGGING_DIRECTORY "/usr/share/httpico/"
+#define DEFAULT_LOGGING_DIRECTORY "/usr/share/httpico/log"
+#define DEFAULT_CONFIGURATION_DIRECTORY "/etc/"
 #else
 #define DEFAULT_SERVER_ROOT "./"
 #define DEFAULT_SERVER_TEMPLATE_ROOT "./"
 #define DEFAULT_LOGGING_DIRECTORY "./"
+#define DEFAULT_CONFIGURATION_DIRECTORY "./"
 #endif
 
 HttpServerConfiguration::HttpServerConfiguration() :
-		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE), serverRoot(DEFAULT_SERVER_ROOT), serverTemplateRoot(
-				DEFAULT_SERVER_TEMPLATE_ROOT), loggingFolder(DEFAULT_LOGGING_DIRECTORY) {
+		serverPort(DEFAULT_SERVER_PORT), requestBufferSize(REQUEST_BUFFER_SIZE) {
+	setConfigurationDirectory(DEFAULT_CONFIGURATION_DIRECTORY);
+	setServerRoot(DEFAULT_SERVER_ROOT);
+	setServerTemplateRoot(DEFAULT_SERVER_TEMPLATE_ROOT);
+	setLoggingFolder(DEFAULT_LOGGING_DIRECTORY);
+}
+
+HttpServerConfiguration::~HttpServerConfiguration() {
+}
+
+void HttpServerConfiguration::setConfigurationDirectory(const std::string &srv) {
 	char *rpathBuf;
-	if ((rpathBuf = realpath(serverRoot.c_str(), NULL)) == NULL) { //let's change to real path
-		perror(serverRoot.c_str());
+	if ((rpathBuf = canonicalize_file_name(srv.c_str())) == NULL) { //let's change to real path
+		Logger::fallbackLog("Error while setting configuration root %s: %s", srv.c_str(), sys_errlist[errno]);
 		exit(EXIT_FAILURE);
 	} else {
-		serverRoot = rpathBuf;
+		configurationDirectory = rpathBuf;
 	}
 	free(rpathBuf);
+}
 
-	if ((rpathBuf = realpath(serverTemplateRoot.c_str(), NULL)) == NULL) { //let's change to real path
-		perror(serverTemplateRoot.c_str());
+const std::string &HttpServerConfiguration::getServerTemplateRoot() {
+	return serverTemplateRoot;
+}
+
+const std::string &HttpServerConfiguration::getConfigurationDirectory() {
+	return configurationDirectory;
+}
+
+void HttpServerConfiguration::setServerTemplateRoot(const std::string &srv) {
+	char *rpathBuf;
+	if ((rpathBuf = canonicalize_file_name(srv.c_str())) == NULL) { //let's change to real path
+		Logger::fallbackLog("Error while setting template root %s: %s", srv.c_str(), sys_errlist[errno]);
 		exit(EXIT_FAILURE);
 	} else {
 		serverTemplateRoot = rpathBuf;
@@ -45,23 +68,19 @@ HttpServerConfiguration::HttpServerConfiguration() :
 	free(rpathBuf);
 }
 
-HttpServerConfiguration::~HttpServerConfiguration() {
-}
-
-const std::string &HttpServerConfiguration::getServerTemplateRoot() {
-	return serverTemplateRoot;
-}
-
-void HttpServerConfiguration::setServerTemplateRoot(const std::string &srv) {
-	serverTemplateRoot = srv;
-}
-
 const std::string &HttpServerConfiguration::getLoggingFolder() {
 	return loggingFolder;
 }
 
 void HttpServerConfiguration::setLoggingFolder(const std::string & log) {
-	loggingFolder = log;
+	char *rpathBuf;
+	if ((rpathBuf = canonicalize_file_name(log.c_str())) == NULL) { //let's change to real path
+		Logger::fallbackLog("Error while setting logging directory %s: %s", log.c_str(), sys_errlist[errno]);
+		exit(EXIT_FAILURE);
+	} else {
+		loggingFolder = rpathBuf;
+	}
+	free(rpathBuf);
 }
 
 const std::string &HttpServerConfiguration::getServerRoot() {
@@ -69,7 +88,14 @@ const std::string &HttpServerConfiguration::getServerRoot() {
 }
 
 void HttpServerConfiguration::setServerRoot(const std::string &srv) {
-	serverRoot = srv;
+	char *rpathBuf;
+	if ((rpathBuf = canonicalize_file_name(srv.c_str())) == NULL) { //let's change to real path
+		Logger::fallbackLog("Error while setting server root %s: %s", srv.c_str(), sys_errlist[errno]);
+		exit(EXIT_FAILURE);
+	} else {
+		serverRoot = rpathBuf;
+	}
+	free(rpathBuf);
 }
 
 int HttpServerConfiguration::getServerPort() {

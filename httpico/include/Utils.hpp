@@ -12,6 +12,7 @@
 #include <sstream>
 #include "ForwardDeclarations.hpp"
 #include <exception>
+#include <vector>
 
 namespace Utils {
 
@@ -32,6 +33,10 @@ std::string toString(const T& val) {
 	out << val;
 	return out.str();
 }
+
+std::string trim(const std::string &str);
+inline bool isIn(char c, const std::string &del);
+std::vector<std::string> tokenize(const std::string &line, const std::string del = "\n\r\t ");
 
 std::string getExtenstion(const std::string & val);
 std::string *getTempatedHtmlFile(const std::string &title, const std::string &content,
