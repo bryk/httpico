@@ -23,6 +23,15 @@ AC_ARG_ENABLE(emdedded, AS_HELP_STRING(--enable-emdedded=yes, [enable emdedded c
     AC_MSG_RESULT("no")
 ])
 
+AC_MSG_CHECKING([debugging logs])
+AC_ARG_ENABLE(debuglogs, AS_HELP_STRING(--enable-debuglogs=yes, [enable debugging logs]),
+[
+	AC_DEFINE(DEBUGLOGS, [], [enable debugging logs])
+    AC_MSG_RESULT(${enableval})
+    ],[
+    AC_MSG_RESULT("no")
+])
+
 AC_PROG_INSTALL
 AC_ARG_PROGRAM
 PKG_PROG_PKG_CONFIG

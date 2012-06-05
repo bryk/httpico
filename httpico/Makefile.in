@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -37,9 +38,11 @@ host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = dist/httpico$(EXEEXT)
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure AUTHORS COPYING \
-	ChangeLog INSTALL NEWS config.guess config.sub depcomp \
+DIST_COMMON = README $(am__configure_deps) $(dist_cfg_DATA) \
+	$(dist_data_DATA) $(dist_img_DATA) $(dist_log_DATA) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.hpp.in $(top_srcdir)/configure AUTHORS \
+	COPYING ChangeLog INSTALL NEWS config.guess config.sub depcomp \
 	install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -48,20 +51,25 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
+CONFIG_HEADER = $(top_builddir)/include/config.hpp
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(cfgdir)" \
+	"$(DESTDIR)$(datadir)" "$(DESTDIR)$(imgdir)" \
+	"$(DESTDIR)$(logdir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_dist_httpico_OBJECTS = Httpico.$(OBJEXT) HttpRequest.$(OBJEXT) \
-	HttpResponse.$(OBJEXT) HttpServer.$(OBJEXT) \
+	HttpResponse.$(OBJEXT) HttpResponseState.$(OBJEXT) \
+	HttpResponseProcessor.$(OBJEXT) \
+	DirectoryResponseProcessor.$(OBJEXT) \
+	FileResponseProcessor.$(OBJEXT) HttpServer.$(OBJEXT) \
 	HttpRequestProcessor.$(OBJEXT) \
-	HttpServerConfiguration.$(OBJEXT) Utils.$(OBJEXT)
+	HttpServerConfiguration.$(OBJEXT) \
+	ConfigurationReader.$(OBJEXT) Logger.$(OBJEXT) Utils.$(OBJEXT)
 dist_httpico_OBJECTS = $(am_dist_httpico_OBJECTS)
-dist_httpico_LDADD = $(LDADD)
-dist_httpico_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(dist_httpico_LDFLAGS) $(LDFLAGS) -o $@
+dist_httpico_DEPENDENCIES =
 am__dirstamp = $(am__leading_dot)dirstamp
-DEFAULT_INCLUDES = -I.@am__isrc@
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -72,6 +80,29 @@ CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(dist_httpico_SOURCES)
 DIST_SOURCES = $(dist_httpico_SOURCES)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+DATA = $(dist_cfg_DATA) $(dist_data_DATA) $(dist_img_DATA) \
+	$(dist_log_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -87,13 +118,11 @@ distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_CXXFLAGS = -Wall
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-CC = @CC@
-CCDEPMODE = @CCDEPMODE@
-CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
@@ -125,6 +154,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -133,7 +165,6 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
-ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -147,7 +178,7 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 builddir = @builddir@
-datadir = @datadir@
+datadir = /usr/share/httpico
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
@@ -169,7 +200,7 @@ mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
-prefix = @prefix@
+prefix = /usr
 program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
@@ -184,17 +215,36 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CXXFLAGS = -Wall
+AM_CFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include
+logdir = $(datadir)/log
+cfgdir = /etc
 dist_httpico_SOURCES = src/Httpico.cpp \
 						src/HttpRequest.cpp \
 						src/HttpResponse.cpp \
+						src/HttpResponseState.cpp \
+						src/HttpResponseProcessor.cpp \
+						src/DirectoryResponseProcessor.cpp \
+						src/FileResponseProcessor.cpp \
 						src/HttpServer.cpp \
 						src/HttpRequestProcessor.cpp \
 						src/HttpServerConfiguration.cpp \
+						src/ConfigurationReader.cpp \
+						src/Logger.cpp \
 						src/Utils.cpp
 
-dist_httpico_LDFLAGS = 
+dist_httpico_LDADD = -lpthread
+srvdir = $(datadir)/srv
+imgdir = $(srvdir)/img
+dist_cfg_DATA = dist/httpico.conf
+dist_log_DATA = dist/empty.log
+dist_data_DATA = dist/template.html
+dist_img_DATA = dist/img/contentTop.png \
+				dist/img/file.png \
+				dist/img/folder.png \
+				dist/img/footerHr.png \
+				dist/img/headerGradient.png 
+
 all: all-am
 
 .SUFFIXES:
@@ -233,6 +283,23 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+
+include/config.hpp: include/stamp-h1
+	@if test ! -f $@; then \
+	  rm -f include/stamp-h1; \
+	  $(MAKE) $(AM_MAKEFLAGS) include/stamp-h1; \
+	else :; fi
+
+include/stamp-h1: $(srcdir)/config.hpp.in $(top_builddir)/config.status
+	@rm -f include/stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status include/config.hpp
+$(srcdir)/config.hpp.in:  $(am__configure_deps) 
+	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
+	rm -f include/stamp-h1
+	touch $@
+
+distclean-hdr:
+	-rm -f include/config.hpp include/stamp-h1
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -275,7 +342,7 @@ dist/$(am__dirstamp):
 	@: > dist/$(am__dirstamp)
 dist/httpico$(EXEEXT): $(dist_httpico_OBJECTS) $(dist_httpico_DEPENDENCIES) dist/$(am__dirstamp)
 	@rm -f dist/httpico$(EXEEXT)
-	$(dist_httpico_LINK) $(dist_httpico_OBJECTS) $(dist_httpico_LDADD) $(LIBS)
+	$(CXXLINK) $(dist_httpico_OBJECTS) $(dist_httpico_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -283,12 +350,18 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ConfigurationReader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DirectoryResponseProcessor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileResponseProcessor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpRequest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpRequestProcessor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpResponse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpResponseProcessor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpResponseState.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HttpServerConfiguration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Httpico.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Logger.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Po@am__quote@
 
 .cpp.o:
@@ -347,6 +420,62 @@ HttpResponse.obj: src/HttpResponse.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpResponse.obj `if test -f 'src/HttpResponse.cpp'; then $(CYGPATH_W) 'src/HttpResponse.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpResponse.cpp'; fi`
 
+HttpResponseState.o: src/HttpResponseState.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpResponseState.o -MD -MP -MF $(DEPDIR)/HttpResponseState.Tpo -c -o HttpResponseState.o `test -f 'src/HttpResponseState.cpp' || echo '$(srcdir)/'`src/HttpResponseState.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpResponseState.Tpo $(DEPDIR)/HttpResponseState.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpResponseState.cpp' object='HttpResponseState.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpResponseState.o `test -f 'src/HttpResponseState.cpp' || echo '$(srcdir)/'`src/HttpResponseState.cpp
+
+HttpResponseState.obj: src/HttpResponseState.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpResponseState.obj -MD -MP -MF $(DEPDIR)/HttpResponseState.Tpo -c -o HttpResponseState.obj `if test -f 'src/HttpResponseState.cpp'; then $(CYGPATH_W) 'src/HttpResponseState.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpResponseState.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpResponseState.Tpo $(DEPDIR)/HttpResponseState.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpResponseState.cpp' object='HttpResponseState.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpResponseState.obj `if test -f 'src/HttpResponseState.cpp'; then $(CYGPATH_W) 'src/HttpResponseState.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpResponseState.cpp'; fi`
+
+HttpResponseProcessor.o: src/HttpResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpResponseProcessor.o -MD -MP -MF $(DEPDIR)/HttpResponseProcessor.Tpo -c -o HttpResponseProcessor.o `test -f 'src/HttpResponseProcessor.cpp' || echo '$(srcdir)/'`src/HttpResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpResponseProcessor.Tpo $(DEPDIR)/HttpResponseProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpResponseProcessor.cpp' object='HttpResponseProcessor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpResponseProcessor.o `test -f 'src/HttpResponseProcessor.cpp' || echo '$(srcdir)/'`src/HttpResponseProcessor.cpp
+
+HttpResponseProcessor.obj: src/HttpResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpResponseProcessor.obj -MD -MP -MF $(DEPDIR)/HttpResponseProcessor.Tpo -c -o HttpResponseProcessor.obj `if test -f 'src/HttpResponseProcessor.cpp'; then $(CYGPATH_W) 'src/HttpResponseProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpResponseProcessor.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpResponseProcessor.Tpo $(DEPDIR)/HttpResponseProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/HttpResponseProcessor.cpp' object='HttpResponseProcessor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpResponseProcessor.obj `if test -f 'src/HttpResponseProcessor.cpp'; then $(CYGPATH_W) 'src/HttpResponseProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpResponseProcessor.cpp'; fi`
+
+DirectoryResponseProcessor.o: src/DirectoryResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DirectoryResponseProcessor.o -MD -MP -MF $(DEPDIR)/DirectoryResponseProcessor.Tpo -c -o DirectoryResponseProcessor.o `test -f 'src/DirectoryResponseProcessor.cpp' || echo '$(srcdir)/'`src/DirectoryResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DirectoryResponseProcessor.Tpo $(DEPDIR)/DirectoryResponseProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/DirectoryResponseProcessor.cpp' object='DirectoryResponseProcessor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DirectoryResponseProcessor.o `test -f 'src/DirectoryResponseProcessor.cpp' || echo '$(srcdir)/'`src/DirectoryResponseProcessor.cpp
+
+DirectoryResponseProcessor.obj: src/DirectoryResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DirectoryResponseProcessor.obj -MD -MP -MF $(DEPDIR)/DirectoryResponseProcessor.Tpo -c -o DirectoryResponseProcessor.obj `if test -f 'src/DirectoryResponseProcessor.cpp'; then $(CYGPATH_W) 'src/DirectoryResponseProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/DirectoryResponseProcessor.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DirectoryResponseProcessor.Tpo $(DEPDIR)/DirectoryResponseProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/DirectoryResponseProcessor.cpp' object='DirectoryResponseProcessor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DirectoryResponseProcessor.obj `if test -f 'src/DirectoryResponseProcessor.cpp'; then $(CYGPATH_W) 'src/DirectoryResponseProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/DirectoryResponseProcessor.cpp'; fi`
+
+FileResponseProcessor.o: src/FileResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FileResponseProcessor.o -MD -MP -MF $(DEPDIR)/FileResponseProcessor.Tpo -c -o FileResponseProcessor.o `test -f 'src/FileResponseProcessor.cpp' || echo '$(srcdir)/'`src/FileResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/FileResponseProcessor.Tpo $(DEPDIR)/FileResponseProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/FileResponseProcessor.cpp' object='FileResponseProcessor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o FileResponseProcessor.o `test -f 'src/FileResponseProcessor.cpp' || echo '$(srcdir)/'`src/FileResponseProcessor.cpp
+
+FileResponseProcessor.obj: src/FileResponseProcessor.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FileResponseProcessor.obj -MD -MP -MF $(DEPDIR)/FileResponseProcessor.Tpo -c -o FileResponseProcessor.obj `if test -f 'src/FileResponseProcessor.cpp'; then $(CYGPATH_W) 'src/FileResponseProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/FileResponseProcessor.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/FileResponseProcessor.Tpo $(DEPDIR)/FileResponseProcessor.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/FileResponseProcessor.cpp' object='FileResponseProcessor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o FileResponseProcessor.obj `if test -f 'src/FileResponseProcessor.cpp'; then $(CYGPATH_W) 'src/FileResponseProcessor.cpp'; else $(CYGPATH_W) '$(srcdir)/src/FileResponseProcessor.cpp'; fi`
+
 HttpServer.o: src/HttpServer.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT HttpServer.o -MD -MP -MF $(DEPDIR)/HttpServer.Tpo -c -o HttpServer.o `test -f 'src/HttpServer.cpp' || echo '$(srcdir)/'`src/HttpServer.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/HttpServer.Tpo $(DEPDIR)/HttpServer.Po
@@ -389,6 +518,34 @@ HttpServerConfiguration.obj: src/HttpServerConfiguration.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o HttpServerConfiguration.obj `if test -f 'src/HttpServerConfiguration.cpp'; then $(CYGPATH_W) 'src/HttpServerConfiguration.cpp'; else $(CYGPATH_W) '$(srcdir)/src/HttpServerConfiguration.cpp'; fi`
 
+ConfigurationReader.o: src/ConfigurationReader.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ConfigurationReader.o -MD -MP -MF $(DEPDIR)/ConfigurationReader.Tpo -c -o ConfigurationReader.o `test -f 'src/ConfigurationReader.cpp' || echo '$(srcdir)/'`src/ConfigurationReader.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ConfigurationReader.Tpo $(DEPDIR)/ConfigurationReader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/ConfigurationReader.cpp' object='ConfigurationReader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ConfigurationReader.o `test -f 'src/ConfigurationReader.cpp' || echo '$(srcdir)/'`src/ConfigurationReader.cpp
+
+ConfigurationReader.obj: src/ConfigurationReader.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ConfigurationReader.obj -MD -MP -MF $(DEPDIR)/ConfigurationReader.Tpo -c -o ConfigurationReader.obj `if test -f 'src/ConfigurationReader.cpp'; then $(CYGPATH_W) 'src/ConfigurationReader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ConfigurationReader.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ConfigurationReader.Tpo $(DEPDIR)/ConfigurationReader.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/ConfigurationReader.cpp' object='ConfigurationReader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ConfigurationReader.obj `if test -f 'src/ConfigurationReader.cpp'; then $(CYGPATH_W) 'src/ConfigurationReader.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ConfigurationReader.cpp'; fi`
+
+Logger.o: src/Logger.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Logger.o -MD -MP -MF $(DEPDIR)/Logger.Tpo -c -o Logger.o `test -f 'src/Logger.cpp' || echo '$(srcdir)/'`src/Logger.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Logger.Tpo $(DEPDIR)/Logger.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Logger.cpp' object='Logger.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Logger.o `test -f 'src/Logger.cpp' || echo '$(srcdir)/'`src/Logger.cpp
+
+Logger.obj: src/Logger.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Logger.obj -MD -MP -MF $(DEPDIR)/Logger.Tpo -c -o Logger.obj `if test -f 'src/Logger.cpp'; then $(CYGPATH_W) 'src/Logger.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Logger.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Logger.Tpo $(DEPDIR)/Logger.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Logger.cpp' object='Logger.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Logger.obj `if test -f 'src/Logger.cpp'; then $(CYGPATH_W) 'src/Logger.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Logger.cpp'; fi`
+
 Utils.o: src/Utils.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Utils.o -MD -MP -MF $(DEPDIR)/Utils.Tpo -c -o Utils.o `test -f 'src/Utils.cpp' || echo '$(srcdir)/'`src/Utils.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Utils.Tpo $(DEPDIR)/Utils.Po
@@ -402,6 +559,86 @@ Utils.obj: src/Utils.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/Utils.cpp' object='Utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Utils.obj `if test -f 'src/Utils.cpp'; then $(CYGPATH_W) 'src/Utils.cpp'; else $(CYGPATH_W) '$(srcdir)/src/Utils.cpp'; fi`
+install-dist_cfgDATA: $(dist_cfg_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(cfgdir)" || $(MKDIR_P) "$(DESTDIR)$(cfgdir)"
+	@list='$(dist_cfg_DATA)'; test -n "$(cfgdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(cfgdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(cfgdir)" || exit $$?; \
+	done
+
+uninstall-dist_cfgDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_cfg_DATA)'; test -n "$(cfgdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(cfgdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(cfgdir)" && rm -f $$files
+install-dist_dataDATA: $(dist_data_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(datadir)" || $(MKDIR_P) "$(DESTDIR)$(datadir)"
+	@list='$(dist_data_DATA)'; test -n "$(datadir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(datadir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(datadir)" || exit $$?; \
+	done
+
+uninstall-dist_dataDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_data_DATA)'; test -n "$(datadir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(datadir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(datadir)" && rm -f $$files
+install-dist_imgDATA: $(dist_img_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(imgdir)" || $(MKDIR_P) "$(DESTDIR)$(imgdir)"
+	@list='$(dist_img_DATA)'; test -n "$(imgdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(imgdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(imgdir)" || exit $$?; \
+	done
+
+uninstall-dist_imgDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_img_DATA)'; test -n "$(imgdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(imgdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(imgdir)" && rm -f $$files
+install-dist_logDATA: $(dist_log_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(logdir)" || $(MKDIR_P) "$(DESTDIR)$(logdir)"
+	@list='$(dist_log_DATA)'; test -n "$(logdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(logdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(logdir)" || exit $$?; \
+	done
+
+uninstall-dist_logDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_log_DATA)'; test -n "$(logdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(logdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(logdir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -413,11 +650,11 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS:  $(HEADERS) $(SOURCES) config.hpp.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	set x; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) config.hpp.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -435,9 +672,9 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	  fi; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+CTAGS:  $(HEADERS) $(SOURCES) config.hpp.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) config.hpp.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -604,9 +841,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(cfgdir)" "$(DESTDIR)$(datadir)" "$(DESTDIR)$(imgdir)" "$(DESTDIR)$(logdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -644,7 +881,7 @@ distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-tags
+	distclean-hdr distclean-tags
 
 dvi: dvi-am
 
@@ -658,14 +895,16 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-dist_cfgDATA install-dist_dataDATA \
+	install-dist_imgDATA install-dist_logDATA
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
 install-exec-am: install-binPROGRAMS
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-am
 
 install-html-am:
@@ -705,25 +944,36 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-dist_cfgDATA \
+	uninstall-dist_dataDATA uninstall-dist_imgDATA \
+	uninstall-dist_logDATA
 
-.MAKE: install-am install-strip
+.MAKE: install-am install-exec-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
 	clean-binPROGRAMS clean-generic ctags dist dist-all dist-bzip2 \
 	dist-gzip dist-lzma dist-shar dist-tarZ dist-xz dist-zip \
 	distcheck distclean distclean-compile distclean-generic \
-	distclean-tags distcleancheck distdir distuninstallcheck dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS
+	distclean-hdr distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-data \
+	install-data-am install-dist_cfgDATA install-dist_dataDATA \
+	install-dist_imgDATA install-dist_logDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-exec-hook \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_cfgDATA uninstall-dist_dataDATA \
+	uninstall-dist_imgDATA uninstall-dist_logDATA
 
+
+install-exec-hook:
+	ls -l $(DESTDIR)$(bindir)/httpico
+	chmod 4755 $(DESTDIR)$(bindir)/httpico
+	ls -l $(DESTDIR)$(bindir)/httpico
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
