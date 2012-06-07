@@ -3,8 +3,6 @@ AM_CXXFLAGS = -Wall
 AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/include
 prefix=/usr
 datadir=/usr/share/httpico
-logdir=$(datadir)/log
-cfgdir=/etc
 
 bin_PROGRAMS = dist/httpico
 dist_httpico_SOURCES = src/Httpico.cpp \
@@ -26,8 +24,10 @@ dist_httpico_LDADD = -lpthread
 
 srvdir = $(datadir)/srv
 imgdir = $(srvdir)/img
+logsdir=$(datadir)/log
+cfgdir=/etc
 dist_cfg_DATA = dist/httpico.conf
-dist_log_DATA = dist/empty.log
+dist_logs_DATA = dist/empty.log
 dist_data_DATA = dist/template.html
 dist_img_DATA = dist/img/contentTop.png \
 				dist/img/file.png \

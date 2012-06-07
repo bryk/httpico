@@ -222,7 +222,7 @@ std::string urlEncode(const std::string &str) {
 }
 
 std::string& replaceAll(std::string &str, const std::string & from, const std::string & to) {
-	int position = str.find(from); // find first space
+	size_t position = str.find(from); // find first space
 
 	while (position != std::string::npos) {
 		str.replace(position, to.size(), to);

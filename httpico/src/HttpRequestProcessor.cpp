@@ -43,7 +43,9 @@ void *run(void * arg) {
 
 void logRequest(HttpRequest *request, HttpResponse *response) {
 	std::string txt;
-	txt += request->clientAddress + " " + HttpRequest::requestTypeToString(request->requestType) + " ";
+	txt += request->clientAddress + " '";
+	txt += request->getHeader("User-Agent") + "' ";
+	txt += HttpRequest::requestTypeToString(request->requestType) + " ";
 	txt += "'" + request->reqestedResource + "'";
 	txt += " -> ";
 	txt += stateValueToString(response->state) + " " + stateToString(response->state);
@@ -116,7 +118,7 @@ bool HttpRequestProcessor::parseResourceName(const std::string &res) {
 			std::string value;
 			if (eqPos != std::string::npos) {
 				key = toks[i].substr(0, eqPos);
-				value = toks[i].substr(eqPos + 1);
+				value =  Utils::urlDecode(toks[i].substr(eqPos + 1));
 			} else {
 				key = toks[i];
 			}
